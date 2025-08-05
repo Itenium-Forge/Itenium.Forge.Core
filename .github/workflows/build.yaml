@@ -1,0 +1,40 @@
+name: Build & Pack Itenium.Forge nugets
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build-test-pack:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 🧾 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🧰 Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x'
+
+      - name: 📦 Restore dependencies
+        run: dotnet restore
+
+      - name: 🛠️ Build
+        run: dotnet build --no-restore --configuration Release
+
+      - name: ✅ Run tests
+        run: dotnet test --no-build --configuration Release --verbosity normal
+
+      - name: 📦 Create NuGet package
+        run: dotnet pack --no-build --configuration Release
+
+      - name: 📤 Upload NuGet package as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: nuget-package
+          path: |
+            **/*.nupkg
+            **/*.snupkg
