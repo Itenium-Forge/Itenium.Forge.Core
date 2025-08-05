@@ -39,8 +39,11 @@ jobs:
       #     dotnet nuget push ./out/*.nupkg --source github --skip-duplicate
 
       - name: 📤 Publish nuget
-        run: |
-          dotnet nuget add source --username laoujin --password ${{ secrets.PackagePublish }} --store-password-in-clear-text --name github "https://nuget.pkg.github.com/Itenium-Forge/index.json"
-          dotnet nuget push Itenium.Forge.Settings.${VERSION}.nupkg --source github --skip-duplicate
+        run: dotnet nuget push Itenium.Forge.Settings.${VERSION}.nupkg --source https://nuget.pkg.github.com/Itenium-Forge/index.json --api-key ${{ secrets.PackagePublish }}
+
+      # - name: 📤 Publish nuget
+      #   run: |
+      #     dotnet nuget add source --username laoujin --password ${{ secrets.PackagePublish }} --store-password-in-clear-text --name github "https://nuget.pkg.github.com/Itenium-Forge/index.json"
+      #     dotnet nuget push Itenium.Forge.Settings.${VERSION}.nupkg --source github --skip-duplicate
       # env:
       #   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
