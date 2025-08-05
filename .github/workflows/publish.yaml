@@ -24,7 +24,7 @@ jobs:
       - name: 📦 Restore dependencies
         run: dotnet restore
 
-      - name: Set VERSION variable from tag
+      - name: 🏷️ VERSION from tag
         run: |
           echo "VERSION=${GITHUB_REF/refs\/tags\/v/}" >> $GITHUB_ENV
           echo "VERSION=${GITHUB_REF/refs\/tags\/v/}"
@@ -32,21 +32,9 @@ jobs:
       - name: 🛠️ Build
         run: dotnet build --no-restore --configuration Release /p:Version=${VERSION}
 
-      - name: 📦 Create NuGet package
+      - name: 📦 Create NuGet
         run: dotnet pack --no-build --configuration Release /p:Version=${VERSION} --output .
 
-      # - name: 📤 Publish nuget
-      #   # run: dotnet nuget push **/*.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate
-      #   #
-      #   run: |
-      #     dotnet nuget push ./out/*.nupkg --source github --skip-duplicate
-
-      - name: 📤 Publish nuget
-        run: dotnet nuget push Itenium.Forge.Settings.${VERSION}.nupkg --source https://nuget.pkg.github.com/Itenium-Forge/index.json --api-key ${{ secrets.GITHUB_TOKEN }} --skip-duplicate
-
-      # - name: 📤 Publish nuget
-      #   run: |
-      #     dotnet nuget add source --username laoujin --password ${{ secrets.PackagePublish }} --store-password-in-clear-text --name github "https://nuget.pkg.github.com/Itenium-Forge/index.json"
-      #     dotnet nuget push Itenium.Forge.Settings.${VERSION}.nupkg --source github --skip-duplicate
-      # env:
-      #   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: 📤 Publish NuGet
+        run: |
+          dotnet nuget push Itenium.Forge.Settings.${VERSION}.nupkg --source https://nuget.pkg.github.com/Itenium-Forge/index.json --api-key ${{ secrets.GITHUB_TOKEN }} --skip-duplicate

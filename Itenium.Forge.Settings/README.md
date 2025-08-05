@@ -2,7 +2,7 @@ Itenium.Forge.Settings
 ======================
 
 ```sh
-dotnet package add Itenium.Forge.Settings
+dotnet add package Itenium.Forge.Settings
 ```
 
 ## Usage
@@ -10,7 +10,8 @@ dotnet package add Itenium.Forge.Settings
 ```cs
 using Itenium.Forge.Settings;
 
-var settings = ForgeSettings.Load<MyAppSettings>();
+var builder = WebApplication.CreateBuilder(args);
+var settings = builder.LoadConfiguration<MyAppSettings>();
 
 public class MyAppSettings : IForgeSettings
 {
