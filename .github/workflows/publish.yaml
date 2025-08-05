@@ -6,7 +6,7 @@ on:
       - 'v*.*.*'
 
 jobs:
-  build-test-pack-publish:
+  publish-nugets:
     runs-on: ubuntu-latest
 
     steps:
@@ -34,4 +34,4 @@ jobs:
         # run: dotnet nuget push **/*.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate
         run: |
           dotnet nuget add source --username laoujin --password ${{ secrets.GITHUB_TOKEN }} --store-password-in-clear-text --name github "https://nuget.pkg.github.com/Itenium-Forge/index.json"
-          dotnet nuget push .\Itenium.Forge.Settings\out\*.nupkg -Source "github" -SkipDuplicate
+          dotnet nuget push .\Itenium.Forge.Settings\out\*.nupkg --source "github" --skip-duplicate
