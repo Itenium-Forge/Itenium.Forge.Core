@@ -9,8 +9,8 @@ jobs:
   publish-nugets:
     runs-on: ubuntu-latest
     permissions:
-      contents: write
-      actions: write
+      contents: read
+      packages: write
 
     steps:
       - name: 🧾 Checkout code
