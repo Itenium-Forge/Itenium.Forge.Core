@@ -5,5 +5,5 @@
 /// </summary>
 public interface IForgeSettings
 {
-    public ForgeSettings ForgeSettings { get; }
+    public ForgeSettings Forge { get; }
 }

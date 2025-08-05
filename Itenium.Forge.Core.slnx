@@ -1,0 +1,8 @@
+<Solution>
+  <Folder Name="/Solution Items/">
+    <File Path=".gitignore" />
+    <File Path="README.md" />
+  </Folder>
+  <Project Path="Itenium.Forge.Settings.Tests/Itenium.Forge.Settings.Tests.csproj" />
+  <Project Path="Itenium.Forge.Settings/Itenium.Forge.Settings.csproj" />
+</Solution>

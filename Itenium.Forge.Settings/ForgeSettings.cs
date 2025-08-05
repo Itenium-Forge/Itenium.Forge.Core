@@ -18,6 +18,12 @@ public class ForgeSettings
         where T : class, IForgeSettings, new()
     {
         string environment = System.Environment.GetEnvironmentVariable("DOTNET_ENVIRONMENT") ?? "Development";
+        return Load<T>(environment);
+    }
+
+    internal static T Load<T>(string environment)
+        where T : class, IForgeSettings, new()
+    {
         bool reloadOnChange = environment == "Development";
 
         var builder = new ConfigurationBuilder()
@@ -33,6 +39,12 @@ public class ForgeSettings
 
         var settings = new T();
         config.Bind(settings);
+
+        if (string.IsNullOrWhiteSpace(settings.Forge.Environment))
+            settings.Forge.Environment = environment;
+        else if (settings.Forge.Environment != environment)
+            throw new Exception($"Environments from $env:DOTNET_ENVIRONMENT ({environment}) and appsettings.{environment}.json ({settings.Forge.Environment}) do not match");
+
         return settings;
     }
 
