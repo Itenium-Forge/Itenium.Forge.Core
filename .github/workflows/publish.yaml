@@ -1,0 +1,35 @@
+name: Build, Test & Publish Itenium.Forge nugets
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+jobs:
+  build-test-pack-publish:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 🧾 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🧰 Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x'
+
+      - name: 📦 Restore dependencies
+        run: dotnet restore
+
+      - name: 🛠️ Build
+        run: dotnet build --no-restore --configuration Release
+
+      - name: ✅ Run tests
+        run: dotnet test --no-build --configuration Release --verbosity normal
+
+      - name: 📦 Create NuGet package
+        run: dotnet pack --no-build --configuration Release
+
+      - name: 📤 Publish nuget
+        # run: dotnet nuget push **/*.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate
+        run: dotnet nuget add source --username laoujin --password ${{ secrets.GITHUB_TOKEN }} --store-password-in-clear-text --name github "https://nuget.pkg.github.com/Itenium-Forge/index.json"
