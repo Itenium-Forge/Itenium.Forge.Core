@@ -1,4 +1,4 @@
-name: Build & Pack Itenium.Forge nugets
+name: Build, Test & Pack
 
 on:
   push:
