@@ -13,21 +13,27 @@ public class ForgeSettingsTests
     public void Load_SetsForgeProperties()
     {
         var settings = ForgeSettings.Load<AppSettings>("Development");
-        Assert.That(settings.Forge.Application, Is.EqualTo("TodoApp"));
-        Assert.That(settings.Forge.TeamName, Is.EqualTo("Core"));
-        Assert.That(settings.Forge.Tenant, Is.EqualTo("itenium"));
-        Assert.That(settings.Forge.ServiceName, Is.EqualTo("TodoApp.WebApi"));
+        Assert.Multiple(() =>
+        {
+            Assert.That(settings.Forge.Application, Is.EqualTo("TodoApp"));
+            Assert.That(settings.Forge.TeamName, Is.EqualTo("Core"));
+            Assert.That(settings.Forge.Tenant, Is.EqualTo("itenium"));
+            Assert.That(settings.Forge.ServiceName, Is.EqualTo("TodoApp.WebApi"));
+        });
     }
 
     [Test]
     public void Load_AddsExtraSettings_WhenEnvironmentIsSet()
     {
         var settings = ForgeSettings.Load<AppSettings>("Production");
-        Assert.That(settings.Forge.Application, Is.EqualTo("TodoApp"));
-        Assert.That(settings.Forge.TeamName, Is.EqualTo("Core"));
-        Assert.That(settings.Forge.Tenant, Is.EqualTo("itenium"));
-        Assert.That(settings.Forge.ServiceName, Is.EqualTo("TodoApp.WebApi"));
-        Assert.That(settings.Forge.Environment, Is.EqualTo("Production"));
+        Assert.Multiple(() =>
+        {
+            Assert.That(settings.Forge.Application, Is.EqualTo("TodoApp"));
+            Assert.That(settings.Forge.TeamName, Is.EqualTo("Core"));
+            Assert.That(settings.Forge.Tenant, Is.EqualTo("itenium"));
+            Assert.That(settings.Forge.ServiceName, Is.EqualTo("TodoApp.WebApi"));
+            Assert.That(settings.Forge.Environment, Is.EqualTo("Production"));
+        });
     }
 
     [Test]
