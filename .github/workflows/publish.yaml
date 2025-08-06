@@ -38,3 +38,5 @@ jobs:
       - name: 📤 Publish NuGet
         run: |
           dotnet nuget push Itenium.Forge.Settings.${VERSION}.nupkg --source https://nuget.pkg.github.com/Itenium-Forge/index.json --api-key ${{ secrets.GITHUB_TOKEN }} --skip-duplicate
+          dotnet nuget push Itenium.Forge.Logging.${VERSION}.nupkg --source https://nuget.pkg.github.com/Itenium-Forge/index.json --api-key ${{ secrets.GITHUB_TOKEN }} --skip-duplicate
+          dotnet nuget push Itenium.Forge.Core.${VERSION}.nupkg --source https://nuget.pkg.github.com/Itenium-Forge/index.json --api-key ${{ secrets.GITHUB_TOKEN }} --skip-duplicate

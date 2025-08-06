@@ -1,4 +1,4 @@
-namespace Itenium.Forge.Settings;
+namespace Itenium.Forge.Core;
 
 public class ForgeSettings
 {

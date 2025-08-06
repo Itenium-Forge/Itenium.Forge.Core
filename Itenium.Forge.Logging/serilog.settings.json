@@ -1,0 +1,36 @@
+{
+  "Serilog": {
+    "Using": [
+      "Serilog.Sinks.Console",
+      "Serilog.Sinks.File"
+    ],
+    "MinimumLevel": {
+      "Default": "Information",
+      "Override": {
+        "Microsoft": "Warning",
+        "Microsoft.AspNetCore.Mvc": "Warning",
+        "Microsoft.AspNetCore.Routing": "Warning",
+        "Microsoft.AspNetCore.Hosting": "Warning",
+        "System": "Warning"
+      }
+    },
+    "WriteTo": [
+      {
+        "Name": "Console",
+        "Args": {
+          "outputTemplate": "[{Timestamp:HH:mm:ss} {Level:u3}] <{SourceContext}> {Message:lj} {NewLine}{Exception}",
+          "theme": "Serilog.Sinks.SystemConsole.Themes.AnsiConsoleTheme::Literate, Serilog.Sinks.Console"
+        }
+      },
+      {
+        "Name": "File",
+        "Args": {
+          "path": "./logs/log-.txt",
+          "rollingInterval": "Day",
+          "outputTemplate": "{Timestamp:HH:mm:ss} [{Level:u3}] <{SourceContext}> {Message}{NewLine}{Exception}"
+          //"outputTemplate": "{Timestamp:o} [{Level:u3}] ({Application}/{MachineName}/{ThreadId}) {Message}{NewLine}{Exception}"
+        }
+      }
+    ]
+  }
+}

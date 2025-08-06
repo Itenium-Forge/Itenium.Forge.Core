@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <NoWarn>CS1591</NoWarn>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Itenium.Forge.Logging\Itenium.Forge.Logging.csproj" />
+    <ProjectReference Include="..\Itenium.Forge.Settings\Itenium.Forge.Settings.csproj" />
+  </ItemGroup>
+
+</Project>

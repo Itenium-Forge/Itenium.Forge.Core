@@ -1,0 +1,162 @@
+using Itenium.Forge.Core;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using OpenTelemetry.Metrics;
+using OpenTelemetry.Resources;
+using Serilog;
+using Serilog.Events;
+using Serilog.Sinks.Grafana.Loki;
+
+namespace Itenium.Forge.Logging;
+
+public static class LoggingExtensions
+{
+    /// <summary>
+    /// Adds logging to Console, Rolling File and Grafana Loki.
+    /// If your appsettings does not contain a Serilog section, it will default to serilog.settings.json.
+    /// Attempts to resolve ForgeSettings and enriches the logger with them.
+    /// Sets up OpenTelemetry Metrics for Prometheus.
+    /// </summary>
+    public static void AddLogging(this WebApplicationBuilder builder)
+    {
+        var forgeSettings = builder.Configuration.GetSection("Forge").Get<ForgeSettings>();
+
+        builder.Services.AddSerilog((services, lc) =>
+        {
+            if (builder.Configuration.GetSection("Serilog").Exists())
+            {
+                lc.ReadFrom.Configuration(builder.Configuration);
+            }
+            else
+            {
+                var configuration = new ConfigurationBuilder()
+                    .SetBasePath(AppContext.BaseDirectory)
+                    .AddJsonFile("serilog.settings.json")
+                    .Build();
+
+                lc.ReadFrom.Configuration(configuration);
+            }
+
+            // If we need injected services for something
+            // lc.ReadFrom.Services(services);
+
+            lc.Enrich.FromLogContext();
+            lc.Enrich.WithClientIp();
+            lc.Enrich.WithMachineName();
+            lc.Enrich.WithThreadId();
+
+            lc.Enrich.WithRequestHeader("x-correlation-id", "CorrelationId");
+            // TODO: logging enrichment: CorrelationId // Activity.Current?.TraceId.ToString(); ?
+            // TODO: logging enrichment: UserId/Name
+
+            if (forgeSettings != null)
+            {
+                lc.Enrich.WithProperty("Environment", forgeSettings.Environment);
+                lc.Enrich.WithProperty("Application", forgeSettings.Application);
+                lc.Enrich.WithProperty("service_name", forgeSettings.ServiceName);
+                if (!string.IsNullOrWhiteSpace(forgeSettings.TeamName))
+                {
+                    lc.Enrich.WithProperty("TeamName", forgeSettings.TeamName);
+                }
+                if (!string.IsNullOrWhiteSpace(forgeSettings.Tenant))
+                {
+                    lc.Enrich.WithProperty("Tenant", forgeSettings.Tenant);
+                }
+            }
+            else
+            {
+                lc.Enrich.WithProperty("Environment", builder.Environment.EnvironmentName);
+                lc.Enrich.WithProperty("service_name", builder.Environment.ApplicationName);
+            }
+
+            lc.WriteTo.GrafanaLoki(
+                "http://localhost:3100",
+                [
+                    // new LokiLabel() { Key = "service_name", Value = forgeSettings?.Application ?? "service-name" },
+                ],
+                [
+                    "level",
+                    "Environment",
+                    "Application",
+                    "MachineName",
+                    "StatusCode"
+                ]
+            );
+        });
+
+        if (forgeSettings != null)
+        {
+            Log.Logger.Information("Starting web application with {@Settings}", forgeSettings);
+        }
+        else
+        {
+            Log.Logger.Error("Starting web application {Application} without ForgeSettings for {Environment}", builder.Environment.ApplicationName, builder.Environment.EnvironmentName);
+        }
+
+
+        builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+
+
+        builder.Services
+            .AddOpenTelemetry()
+            .ConfigureResource(r =>
+            {
+                r.AddService(builder.Environment.ApplicationName);
+            })
+            .WithMetrics(metrics =>
+            {
+                metrics.AddAspNetCoreInstrumentation();
+                metrics.AddHttpClientInstrumentation();
+                metrics.AddRuntimeInstrumentation();
+                metrics.AddPrometheusExporter();
+            });
+            //.WithTracing(tracing =>
+            //{
+            //    tracing.AddAspNetCoreInstrumentation();
+            //});
+    }
+
+    /// <summary>
+    /// Setup our custom request logger <see cref="RequestLoggingMiddleware"/>.
+    /// Setup Prometheus /metrics endpoint.
+    /// </summary>
+    public static void UseLogging(this WebApplication app)
+    {
+        var logger = app.Services.GetRequiredService<ILogger<WebApplication>>();
+        var forgeSettings = app.Services.GetService<ForgeSettings>();
+        if (forgeSettings != null)
+        {
+            logger.LogInformation("Built web application with {@Settings}", forgeSettings);
+        }
+        else
+        {
+            logger.LogError("Built web application {Application} without ForgeSettings for {Environment}", app.Environment.ApplicationName, app.Environment.EnvironmentName);
+        }
+
+        app.UseOpenTelemetryPrometheusScrapingEndpoint();
+
+        // Alternatively: app.UseSerilogRequestLogging();
+        app.UseMiddleware<RequestLoggingMiddleware>();
+    }
+
+    /// <summary>
+    /// Creates the Serilog bootstrap logger (console + startup.txt file)
+    /// </summary>
+    public static Serilog.ILogger CreateLogger()
+    {
+        var logger = new LoggerConfiguration()
+            .WriteTo.Console()
+            .WriteTo.File(
+                "logs/startup-.txt",
+                rollingInterval: RollingInterval.Day,
+                outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss} [{Level}] {Message} {Properties}{NewLine}{Exception}"
+            )
+            .CreateBootstrapLogger();
+
+        logger.Information("Starting web application");
+
+        return logger;
+    }
+}

@@ -5,6 +5,10 @@
     <File Path="LICENSE" />
     <File Path="README.md" />
   </Folder>
+  <Project Path="Itenium.Forge.Core/Itenium.Forge.Core.csproj" Id="b7af8133-b6e4-4552-9033-cfd7694bba2e" />
+  <Project Path="Itenium.Forge.ExampleApp/Itenium.Forge.ExampleApp.csproj" Id="3384063f-5640-48ef-8725-b6bd13c0a13a" />
+  <Project Path="Itenium.Forge.Logging.Tests/Itenium.Forge.Logging.Tests.csproj" Id="c51639d6-b334-48b2-b71e-4bf32c69126c" />
+  <Project Path="Itenium.Forge.Logging/Itenium.Forge.Logging.csproj" Id="b864a22e-a0ca-4fdf-b94f-ac98c293581d" />
   <Project Path="Itenium.Forge.Settings.Tests/Itenium.Forge.Settings.Tests.csproj" />
   <Project Path="Itenium.Forge.Settings/Itenium.Forge.Settings.csproj" />
 </Solution>
