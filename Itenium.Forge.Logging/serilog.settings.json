@@ -2,7 +2,8 @@
   "Serilog": {
     "Using": [
       "Serilog.Sinks.Console",
-      "Serilog.Sinks.File"
+      "Serilog.Sinks.File",
+      "Serilog.Expressions"
     ],
     "MinimumLevel": {
       "Default": "Information",
@@ -18,8 +19,16 @@
       {
         "Name": "Console",
         "Args": {
-          "outputTemplate": "[{Timestamp:HH:mm:ss} {Level:u3}] <{SourceContext}> {Message:lj} {NewLine}{Exception}",
-          "theme": "Serilog.Sinks.SystemConsole.Themes.AnsiConsoleTheme::Literate, Serilog.Sinks.Console"
+          // Template: https://github.com/serilog/serilog/wiki/Formatting-Output
+          // :l => switch off quoting of strings
+          // :j => json style rendering
+          //"outputTemplate": "[{Timestamp:HH:mm:ss} {Level:u3}] Uuh <{SourceContext}> {Message:lj} {NewLine}{Exception}",
+          // "theme": "Serilog.Sinks.SystemConsole.Themes.AnsiConsoleTheme::Literate, Serilog.Sinks.Console"
+          "formatter": {
+            "type": "Serilog.Templates.ExpressionTemplate, Serilog.Expressions",
+            "template": "[{@t:HH:mm:ss} {@l:u3}] <{Substring(SourceContext, LastIndexOf(SourceContext, '.') + 1)}> {@m:lj}\n{@x}",
+            "theme": "Serilog.Templates.Themes.TemplateTheme::Code, Serilog.Expressions"
+          }
         }
       },
       {
@@ -27,8 +36,12 @@
         "Args": {
           "path": "./logs/log-.txt",
           "rollingInterval": "Day",
-          "outputTemplate": "{Timestamp:HH:mm:ss} [{Level:u3}] <{SourceContext}> {Message}{NewLine}{Exception}"
+          //"outputTemplate": "{Timestamp:HH:mm:ss} [{Level:u3}] <{SourceContext}> {Message}{NewLine}{Exception}"
           //"outputTemplate": "{Timestamp:o} [{Level:u3}] ({Application}/{MachineName}/{ThreadId}) {Message}{NewLine}{Exception}"
+          "formatter": {
+            "type": "Serilog.Templates.ExpressionTemplate, Serilog.Expressions",
+            "template": "[{@t:HH:mm:ss} {@l:u3}] <{Substring(SourceContext, LastIndexOf(SourceContext, '.') + 1)}> {@m:lj}\n{@x}"
+          }
         }
       }
     ]
