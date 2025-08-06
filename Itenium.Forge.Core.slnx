@@ -11,4 +11,5 @@
   <Project Path="Itenium.Forge.Logging/Itenium.Forge.Logging.csproj" Id="b864a22e-a0ca-4fdf-b94f-ac98c293581d" />
   <Project Path="Itenium.Forge.Settings.Tests/Itenium.Forge.Settings.Tests.csproj" />
   <Project Path="Itenium.Forge.Settings/Itenium.Forge.Settings.csproj" />
+  <Project Path="Itenium.Forge.Swagger/Itenium.Forge.Swagger.csproj" Id="bb8bfddd-d10c-43bb-8155-ba26ff0a6dc5" />
 </Solution>

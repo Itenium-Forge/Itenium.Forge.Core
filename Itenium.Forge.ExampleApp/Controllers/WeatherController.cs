@@ -2,6 +2,9 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Itenium.Forge.ExampleApp.Controllers;
 
+/// <summary>
+/// All kinds of weather stuff
+/// </summary>
 [ApiController]
 [Route("api/[controller]")]
 public class WeatherController : ControllerBase
@@ -18,6 +21,9 @@ public class WeatherController : ControllerBase
         _logger = logger;
     }
 
+    /// <summary>
+    /// Get the weather forecast
+    /// </summary>
     [HttpGet]
     public IEnumerable<WeatherForecast> Get([FromQuery]int[] years)
     {
