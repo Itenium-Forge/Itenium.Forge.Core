@@ -7,16 +7,20 @@ public static class SwaggerExtensions
 {
     public static void AddSwagger(this WebApplicationBuilder builder)
     {
-        builder.Services.AddSwaggerGen(c =>
+        builder.Services.AddEndpointsApiExplorer();
+        builder.Services.AddSwaggerGen(options =>
         {
             var filePath = Path.Combine(AppContext.BaseDirectory, $"{builder.Environment.ApplicationName}.xml");
-            c.IncludeXmlComments(filePath);
+            options.IncludeXmlComments(filePath);
         });
     }
 
     public static void UseSwagger(this WebApplication app)
     {
         app.UseSwagger(options => { });
-        app.UseSwaggerUI();
+        app.UseSwaggerUI(options =>
+        {
+            options.SwaggerEndpoint("/swagger/v1/swagger.json", $"{app.Environment.ApplicationName} v1");
+        });
     }
 }

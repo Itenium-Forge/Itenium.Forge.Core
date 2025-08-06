@@ -14,7 +14,7 @@ try
 
     builder.Services.AddControllers();
     builder.AddSwagger();
-
+    
     WebApplication app = builder.Build();
     app.UseLogging();
 
