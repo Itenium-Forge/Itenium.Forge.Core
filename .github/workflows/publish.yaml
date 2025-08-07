@@ -41,3 +41,5 @@ jobs:
           dotnet nuget push Itenium.Forge.Logging.${VERSION}.nupkg --source https://nuget.pkg.github.com/Itenium-Forge/index.json --api-key ${{ secrets.GITHUB_TOKEN }} --skip-duplicate
           dotnet nuget push Itenium.Forge.Core.${VERSION}.nupkg --source https://nuget.pkg.github.com/Itenium-Forge/index.json --api-key ${{ secrets.GITHUB_TOKEN }} --skip-duplicate
           dotnet nuget push Itenium.Forge.Swagger.${VERSION}.nupkg --source https://nuget.pkg.github.com/Itenium-Forge/index.json --api-key ${{ secrets.GITHUB_TOKEN }} --skip-duplicate
+          dotnet nuget push Itenium.Forge.Controllers.${VERSION}.nupkg --source https://nuget.pkg.github.com/Itenium-Forge/index.json --api-key ${{ secrets.GITHUB_TOKEN }} --skip-duplicate
+          dotnet nuget push Itenium.Forge.Security.${VERSION}.nupkg --source https://nuget.pkg.github.com/Itenium-Forge/index.json --api-key ${{ secrets.GITHUB_TOKEN }} --skip-duplicate

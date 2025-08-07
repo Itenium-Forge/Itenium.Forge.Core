@@ -5,10 +5,12 @@
     <File Path="LICENSE" />
     <File Path="README.md" />
   </Folder>
+  <Project Path="Itenium.Forge.Controllers/Itenium.Forge.Controllers.csproj" Id="8b40a1ef-4f1b-47cc-8c9c-253991ac3e46" />
   <Project Path="Itenium.Forge.Core/Itenium.Forge.Core.csproj" Id="b7af8133-b6e4-4552-9033-cfd7694bba2e" />
   <Project Path="Itenium.Forge.ExampleApp/Itenium.Forge.ExampleApp.csproj" Id="3384063f-5640-48ef-8725-b6bd13c0a13a" />
   <Project Path="Itenium.Forge.Logging.Tests/Itenium.Forge.Logging.Tests.csproj" Id="c51639d6-b334-48b2-b71e-4bf32c69126c" />
   <Project Path="Itenium.Forge.Logging/Itenium.Forge.Logging.csproj" Id="b864a22e-a0ca-4fdf-b94f-ac98c293581d" />
+  <Project Path="Itenium.Forge.Security/Itenium.Forge.Security.csproj" Id="3045e3ed-b4dc-407b-9bde-d1115e42911c" />
   <Project Path="Itenium.Forge.Settings.Tests/Itenium.Forge.Settings.Tests.csproj" />
   <Project Path="Itenium.Forge.Settings/Itenium.Forge.Settings.csproj" />
   <Project Path="Itenium.Forge.Swagger/Itenium.Forge.Swagger.csproj" Id="bb8bfddd-d10c-43bb-8155-ba26ff0a6dc5" />
