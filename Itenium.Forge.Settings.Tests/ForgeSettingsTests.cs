@@ -11,7 +11,7 @@ public class ForgeSettingsTests
     public void Load_SetsCustomProperties()
     {
         var builder = WebApplication.CreateBuilder();
-        var settings = builder.LoadConfiguration<AppSettings>("Development");
+        var settings = builder.AddForgeSettings<AppSettings>("Development");
         Assert.That(settings.MyProp, Is.True);
     }
 
@@ -19,7 +19,7 @@ public class ForgeSettingsTests
     public void Load_SetsBuilderEnvironmentName()
     {
         var builder = WebApplication.CreateBuilder();
-        var settings = builder.LoadConfiguration<AppSettings>("Test");
+        var settings = builder.AddForgeSettings<AppSettings>("Test");
         Assert.That(builder.Environment.EnvironmentName, Is.EqualTo("Test"));
     }
 
@@ -27,7 +27,7 @@ public class ForgeSettingsTests
     public void Load_SetsBuilderConfiguration()
     {
         var builder = WebApplication.CreateBuilder();
-        builder.LoadConfiguration<AppSettings>("Test");
+        builder.AddForgeSettings<AppSettings>("Test");
         var settings = builder.Configuration.GetSection("Forge").Get<ForgeSettings>();
         Assert.That(settings?.TeamName, Is.EqualTo("TestTeam"));
     }
@@ -36,7 +36,7 @@ public class ForgeSettingsTests
     public void Load_SetsForgeProperties()
     {
         var builder = WebApplication.CreateBuilder();
-        var settings = builder.LoadConfiguration<AppSettings>("Development");
+        var settings = builder.AddForgeSettings<AppSettings>("Development");
         Assert.Multiple(() =>
         {
             Assert.That(settings.Forge.Application, Is.EqualTo("TodoApp"));
@@ -50,7 +50,7 @@ public class ForgeSettingsTests
     public void Load_AddsExtraSettings_WhenEnvironmentIsSet()
     {
         var builder = WebApplication.CreateBuilder();
-        var settings = builder.LoadConfiguration<AppSettings>("Production");
+        var settings = builder.AddForgeSettings<AppSettings>("Production");
         Assert.Multiple(() =>
         {
             Assert.That(settings.Forge.Application, Is.EqualTo("TodoApp"));
@@ -65,7 +65,7 @@ public class ForgeSettingsTests
     public void Load_CrashesWhenEnvironments_DoNotMatch()
     {
         var builder = WebApplication.CreateBuilder();
-        var ex = Assert.Throws<Exception>(() => builder.LoadConfiguration<AppSettings>("Staging"));
+        var ex = Assert.Throws<Exception>(() => builder.AddForgeSettings<AppSettings>("Staging"));
         Assert.That(ex.Message, Does.Contain("Environments from"));
         Assert.That(ex.Message, Does.Contain("do not match"));
     }
@@ -74,7 +74,7 @@ public class ForgeSettingsTests
     public void Load_AllowsEmptyEnvironment_AndDefaultsToEnvironmentVariable()
     {
         var builder = WebApplication.CreateBuilder();
-        var settings = builder.LoadConfiguration<AppSettings>("Test");
+        var settings = builder.AddForgeSettings<AppSettings>("Test");
         Assert.That(settings.Forge.Environment, Is.EqualTo("Test"));
     }
 
@@ -82,7 +82,7 @@ public class ForgeSettingsTests
     public void Load_AllowsOverride_OfCustomProperties()
     {
         var builder = WebApplication.CreateBuilder();
-        var settings = builder.LoadConfiguration<AppSettings>("Test");
+        var settings = builder.AddForgeSettings<AppSettings>("Test");
         Assert.That(settings.MyProp, Is.False);
     }
 
@@ -90,7 +90,7 @@ public class ForgeSettingsTests
     public void Load_InjectsSettingsAndForge()
     {
         var builder = WebApplication.CreateBuilder();
-        builder.LoadConfiguration<AppSettings>("Development");
+        builder.AddForgeSettings<AppSettings>("Development");
         var app = builder.Build();
 
         app.Services.GetRequiredService<AppSettings>();

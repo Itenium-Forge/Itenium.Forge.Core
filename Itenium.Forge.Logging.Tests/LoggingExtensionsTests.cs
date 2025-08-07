@@ -15,7 +15,7 @@ public class LoggingExtensionsTests
     public void Test1()
     {
         var builder = WebApplication.CreateBuilder();
-        builder.AddLogging();
+        builder.AddForgeLogging();
         var app = builder.Build();
         // app.UseSe
 
