@@ -17,11 +17,11 @@ Log.Logger = LoggingExtensions.CreateLogger();
 try
 {
     var builder = WebApplication.CreateBuilder(args);
-    var settings = builder.LoadConfiguration<MyAppSettings>();
-    builder.AddLogging();
+    var settings = builder.AddForgeSettings<MyAppSettings>();
+    builder.AddForgeLogging();
 
     var app = builder.Build();
-    app.UseLogging();
+    app.AddForgeLogging();
 
     app.Run();
 }

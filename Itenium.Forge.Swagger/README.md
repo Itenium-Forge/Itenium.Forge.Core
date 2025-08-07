@@ -11,11 +11,11 @@ dotnet add package Itenium.Forge.Swagger
 using Itenium.Forge.Swagger;
 
 var builder = WebApplication.CreateBuilder(args);
-builder.AddSwagger();
+builder.AddForgeSwagger();
 
 var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
-    app.UseSwagger();
+    app.UseForgeSwagger();
 }
 ```

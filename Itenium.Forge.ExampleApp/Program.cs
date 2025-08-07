@@ -1,3 +1,4 @@
+using Itenium.Forge.Controllers;
 using Itenium.Forge.ExampleApp;
 using Itenium.Forge.Logging;
 using Itenium.Forge.Settings;
@@ -9,18 +10,18 @@ Log.Logger = LoggingExtensions.CreateLogger();
 try
 {
     var builder = WebApplication.CreateBuilder(args);
-    var settings = builder.LoadConfiguration<ExampleSettings>();
-    builder.AddLogging();
+    var settings = builder.AddForgeSettings<ExampleSettings>();
+    builder.AddForgeLogging();
 
-    builder.Services.AddControllers();
-    builder.AddSwagger();
+    builder.AddForgeControllers();
+    builder.AddForgeSwagger();
     
     WebApplication app = builder.Build();
-    app.UseLogging();
+    app.UseForgeLogging();
 
     // app.UseAuthorization();
 
-    app.MapControllers();
+    app.UseForgeControllers();
     if (app.Environment.IsDevelopment())
     {
         app.UseSwagger();

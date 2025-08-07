@@ -19,7 +19,7 @@ public static class LoggingExtensions
     /// Attempts to resolve ForgeSettings and enriches the logger with them.
     /// Sets up OpenTelemetry Metrics for Prometheus.
     /// </summary>
-    public static void AddLogging(this WebApplicationBuilder builder)
+    public static void AddForgeLogging(this WebApplicationBuilder builder)
     {
         var forgeSettings = builder.Configuration.GetSection("Forge").Get<ForgeSettings>();
 
@@ -99,30 +99,31 @@ public static class LoggingExtensions
         builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 
 
-        builder.Services
-            .AddOpenTelemetry()
-            .ConfigureResource(r =>
-            {
-                r.AddService(builder.Environment.ApplicationName);
-            })
-            .WithMetrics(metrics =>
-            {
-                metrics.AddAspNetCoreInstrumentation();
-                metrics.AddHttpClientInstrumentation();
-                metrics.AddRuntimeInstrumentation();
-                metrics.AddPrometheusExporter();
-            });
-            //.WithTracing(tracing =>
-            //{
-            //    tracing.AddAspNetCoreInstrumentation();
-            //});
+        // TODO: This should be in Forge.Telemetry
+        //builder.Services
+        //    .AddOpenTelemetry()
+        //    .ConfigureResource(r =>
+        //    {
+        //        r.AddService(builder.Environment.ApplicationName);
+        //    })
+        //    .WithMetrics(metrics =>
+        //    {
+        //        metrics.AddAspNetCoreInstrumentation();
+        //        metrics.AddHttpClientInstrumentation();
+        //        metrics.AddRuntimeInstrumentation();
+        //        metrics.AddPrometheusExporter();
+        //    });
+        //    .WithTracing(tracing =>
+        //    {
+        //        tracing.AddAspNetCoreInstrumentation();
+        //    });
     }
 
     /// <summary>
     /// Setup our custom request logger <see cref="RequestLoggingMiddleware"/>.
     /// Setup Prometheus /metrics endpoint.
     /// </summary>
-    public static void UseLogging(this WebApplication app)
+    public static void UseForgeLogging(this WebApplication app)
     {
         var logger = app.Services.GetRequiredService<ILogger<WebApplication>>();
         var forgeSettings = app.Services.GetService<ForgeSettings>();
@@ -135,7 +136,8 @@ public static class LoggingExtensions
             logger.LogError("Built web application {Application} without ForgeSettings for {Environment}", app.Environment.ApplicationName, app.Environment.EnvironmentName);
         }
 
-        app.UseOpenTelemetryPrometheusScrapingEndpoint();
+        // TODO: This should be in Forge.Telemetry
+        // app.UseOpenTelemetryPrometheusScrapingEndpoint();
 
         // Alternatively: app.UseSerilogRequestLogging();
         app.UseMiddleware<RequestLoggingMiddleware>();

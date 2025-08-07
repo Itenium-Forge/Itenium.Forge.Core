@@ -9,7 +9,7 @@ namespace Itenium.Forge.Controllers;
 
 public static class ControllerExtensions
 {
-    public static void AddControllers(this WebApplicationBuilder builder)
+    public static void AddForgeControllers(this WebApplicationBuilder builder)
     {
         var hostSettings = builder.Configuration.GetSection("Hosting").Get<HostingSettings>();
         if (hostSettings != null)
@@ -48,7 +48,7 @@ public static class ControllerExtensions
         }
     }
 
-    public static void UseControllers(this WebApplication app)
+    public static void UseForgeControllers(this WebApplication app)
     {
         var hostSettings = app.Services.GetService<HostingSettings>();
         if (!string.IsNullOrWhiteSpace(hostSettings?.CorsOrigins))

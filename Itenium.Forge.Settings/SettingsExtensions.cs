@@ -13,14 +13,14 @@ public static class SettingsExtensions
     /// - Updates the builder.Configuration
     /// - Adds TAppSettings and <see cref="ForgeSettings"/> as singleton service
     /// </summary>
-    public static TAppSettings LoadConfiguration<TAppSettings>(this WebApplicationBuilder builder)
+    public static TAppSettings AddForgeSettings<TAppSettings>(this WebApplicationBuilder builder)
         where TAppSettings : class, IForgeSettings, new()
     {
         string environment = System.Environment.GetEnvironmentVariable("DOTNET_ENVIRONMENT") ?? "Development";
-        return LoadConfiguration<TAppSettings>(builder, environment);
+        return AddForgeSettings<TAppSettings>(builder, environment);
     }
 
-    internal static T LoadConfiguration<T>(this WebApplicationBuilder builder, string environment)
+    internal static T AddForgeSettings<T>(this WebApplicationBuilder builder, string environment)
         where T : class, IForgeSettings, new()
     {
         var configurationBuilder = new ConfigurationBuilder()

@@ -11,7 +11,7 @@ dotnet add package Itenium.Forge.Settings
 using Itenium.Forge.Settings;
 
 var builder = WebApplication.CreateBuilder(args);
-var settings = builder.LoadConfiguration<MyAppSettings>();
+var settings = builder.AddForgeSettings<MyAppSettings>();
 
 public class MyAppSettings : IForgeSettings
 {

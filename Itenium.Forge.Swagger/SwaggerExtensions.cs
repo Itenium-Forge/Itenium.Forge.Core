@@ -10,7 +10,7 @@ public static class SwaggerExtensions
     /// Configure Swagger with XmlComments.
     /// Project must have: {GenerateDocumentationFile}true{/GenerateDocumentationFile}
     /// </summary>
-    public static void AddSwagger(this WebApplicationBuilder builder)
+    public static void AddForgeSwagger(this WebApplicationBuilder builder)
     {
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen(options =>
@@ -47,7 +47,7 @@ public static class SwaggerExtensions
     /// <summary>
     /// Add Swagger UI
     /// </summary>
-    public static void UseSwagger(this WebApplication app)
+    public static void UseForgeSwagger(this WebApplication app)
     {
         app.UseSwagger(options => { });
         app.UseSwaggerUI(options =>
