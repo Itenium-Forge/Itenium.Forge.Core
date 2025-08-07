@@ -4,14 +4,15 @@
     <TargetFramework>net9.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <NoWarn>CS1591</NoWarn>
+    <NoWarn>CS1591;IDE0290</NoWarn>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
 
   <PropertyGroup>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageId>Itenium.Forge.Logging</PackageId>
-    <Version>0.0.0-beta.1</Version>
+    <Version>0.0.0</Version>
     <Authors>Itenium</Authors>
     <Company>Itenium</Company>
     <Description>Configures logging, metrics and tracing.</Description>
@@ -22,13 +23,16 @@
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageIconUrl>https://itenium.be/img/favicon.png</PackageIconUrl>
+    <PackageIcon>icon.png</PackageIcon>
 
     <IncludeSymbols>true</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
   </PropertyGroup>
+
   <ItemGroup>
     <None Include=".\README.md" Pack="true" PackagePath="" />
-    <None Include=".\serilog.settings.json" Pack="true" PackagePath="" />
+    <None Include="..\icon.png" Link="icon.png" Pack="true" Visible="false" PackagePath="" />
+    <EmbeddedResource Include=".\serilog.settings.json" />
   </ItemGroup>
 
   <ItemGroup>
@@ -36,11 +40,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="OpenTelemetry.Exporter.Prometheus.AspNetCore" Version="1.12.0-beta.1" />
-    <PackageReference Include="OpenTelemetry.Extensions.Hosting" Version="1.12.0" />
-    <PackageReference Include="OpenTelemetry.Instrumentation.AspNetCore" Version="1.12.0" />
-    <PackageReference Include="OpenTelemetry.Instrumentation.Http" Version="1.12.0" />
-    <PackageReference Include="OpenTelemetry.Instrumentation.Runtime" Version="1.12.0" />
     <PackageReference Include="Serilog" Version="4.3.0" />
     <PackageReference Include="Serilog.AspNetCore" Version="9.0.0" />
     <PackageReference Include="Serilog.Enrichers.ClientInfo" Version="2.3.0" />
@@ -56,11 +55,5 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Itenium.Forge.Core\Itenium.Forge.Core.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Update="serilog.settings.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
   </ItemGroup>
 </Project>

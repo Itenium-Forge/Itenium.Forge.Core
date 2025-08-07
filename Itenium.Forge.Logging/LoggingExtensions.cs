@@ -3,11 +3,9 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using OpenTelemetry.Metrics;
-using OpenTelemetry.Resources;
 using Serilog;
-using Serilog.Events;
 using Serilog.Sinks.Grafana.Loki;
+using System.Reflection;
 
 namespace Itenium.Forge.Logging;
 
@@ -31,9 +29,12 @@ public static class LoggingExtensions
             }
             else
             {
+                var assembly = Assembly.GetExecutingAssembly();
+                const string embeddedResourceName = "Itenium.Forge.Logging.serilog.settings.json";
+                using var defaultSerilogSettings = assembly.GetManifestResourceStream(embeddedResourceName)!;
                 var configuration = new ConfigurationBuilder()
                     .SetBasePath(AppContext.BaseDirectory)
-                    .AddJsonFile("serilog.settings.json")
+                    .AddJsonStream(defaultSerilogSettings)
                     .Build();
 
                 lc.ReadFrom.Configuration(configuration);
@@ -100,6 +101,14 @@ public static class LoggingExtensions
 
 
         // TODO: This should be in Forge.Telemetry
+        // TODO: need: OpenTelemetry.Exporter.Prometheus.AspNetCore
+        // TODO: and also:
+        //<PackageReference Include="OpenTelemetry.Extensions.Hosting" Version="1.12.0" />
+        //<PackageReference Include="OpenTelemetry.Instrumentation.AspNetCore" Version="1.12.0" />
+        //<PackageReference Include="OpenTelemetry.Instrumentation.Http" Version="1.12.0" />
+        //<PackageReference Include="OpenTelemetry.Instrumentation.Runtime" Version="1.12.0" />
+        //using OpenTelemetry.Metrics;
+        //using OpenTelemetry.Resources;
         //builder.Services
         //    .AddOpenTelemetry()
         //    .ConfigureResource(r =>

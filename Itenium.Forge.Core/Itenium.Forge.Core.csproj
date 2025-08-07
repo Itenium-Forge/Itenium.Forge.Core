@@ -4,7 +4,8 @@
     <TargetFramework>net9.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <NoWarn>CS1591</NoWarn>
+    <NoWarn>CS1591;IDE0290</NoWarn>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
 
@@ -22,11 +23,13 @@
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageIconUrl>https://itenium.be/img/favicon.png</PackageIconUrl>
+    <PackageIcon>icon.png</PackageIcon>
 
     <IncludeSymbols>true</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
   </PropertyGroup>
   <ItemGroup>
     <None Include=".\README.md" Pack="true" PackagePath="" />
+    <None Include="..\icon.png" Link="icon.png" Pack="true" Visible="false" PackagePath="" />
   </ItemGroup>
 </Project>
