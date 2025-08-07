@@ -155,7 +155,7 @@ public static class LoggingExtensions
     /// <summary>
     /// Creates the Serilog bootstrap logger (console + startup.txt file)
     /// </summary>
-    public static Serilog.ILogger CreateLogger()
+    public static Serilog.ILogger CreateBootstrapLogger()
     {
         var logger = new LoggerConfiguration()
             .WriteTo.Console()

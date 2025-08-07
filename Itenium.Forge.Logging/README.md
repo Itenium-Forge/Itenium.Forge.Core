@@ -12,7 +12,7 @@ dotnet add package Itenium.Forge.Logging
 using Itenium.Forge.Settings;
 using Itenium.Forge.Logging;
 
-Log.Logger = LoggingExtensions.CreateLogger();
+Log.Logger = LoggingExtensions.CreateBootstrapLogger();
 
 try
 {

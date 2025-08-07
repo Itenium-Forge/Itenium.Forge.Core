@@ -5,7 +5,7 @@ using Itenium.Forge.Settings;
 using Itenium.Forge.Swagger;
 using Serilog;
 
-Log.Logger = LoggingExtensions.CreateLogger();
+Log.Logger = LoggingExtensions.CreateBootstrapLogger();
 
 try
 {
