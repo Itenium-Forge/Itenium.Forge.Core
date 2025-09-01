@@ -24,7 +24,7 @@ try
     app.UseForgeControllers();
     if (app.Environment.IsDevelopment())
     {
-        app.UseSwagger();
+        app.UseForgeSwagger();
     }
 
     app.Run();
