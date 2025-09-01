@@ -1,9 +1,6 @@
 Itenium.Forge.Core
 ==================
 
-TODO: Need Github cron job to redownload github nugets so that they do not expire? (just the latest version?)
-
-
 - Github > Profile > Settings > Developer settings
   - Personal access tokens > Tokens (classic)
   - Generate new token (classic)
