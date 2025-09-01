@@ -12,33 +12,47 @@ namespace Itenium.Forge.Logging;
 public static class LoggingExtensions
 {
     /// <summary>
-    /// Adds logging to Console, Rolling File and Grafana Loki.
+    /// Adds logging to Console, Rolling File and (optionally) Grafana Loki.
     /// If your appsettings does not contain a Serilog section, it will default to serilog.settings.json.
     /// Attempts to resolve ForgeSettings and enriches the logger with them.
-    /// Sets up OpenTelemetry Metrics for Prometheus.
     /// </summary>
     public static void AddForgeLogging(this WebApplicationBuilder builder)
     {
+        var loggingConfig = builder.Configuration.GetSection("ForgeConfiguration:Logging").Get<LoggingConfiguration>();
         var forgeSettings = builder.Configuration.GetSection("Forge").Get<ForgeSettings>();
 
         builder.Services.AddSerilog((services, lc) =>
         {
+            IConfigurationRoot actualConfiguration;
             if (builder.Configuration.GetSection("Serilog").Exists())
             {
-                lc.ReadFrom.Configuration(builder.Configuration);
+                actualConfiguration = builder.Configuration;
+
+                if (!string.IsNullOrWhiteSpace(loggingConfig?.FilePath))
+                    throw new Exception("Cannot have a custom Serilog appSettings and set the ForgeConfiguration:Logging:FilePath");
             }
             else
             {
                 var assembly = Assembly.GetExecutingAssembly();
                 const string embeddedResourceName = "Itenium.Forge.Logging.serilog.settings.json";
                 using var defaultSerilogSettings = assembly.GetManifestResourceStream(embeddedResourceName)!;
-                var configuration = new ConfigurationBuilder()
+                actualConfiguration = new ConfigurationBuilder()
                     .SetBasePath(AppContext.BaseDirectory)
                     .AddJsonStream(defaultSerilogSettings)
                     .Build();
 
-                lc.ReadFrom.Configuration(configuration);
+                if (!string.IsNullOrWhiteSpace(loggingConfig?.FilePath))
+                {
+                    string logPath = loggingConfig.FilePath;
+                    if (string.IsNullOrWhiteSpace(Path.GetExtension(logPath)))
+                    {
+                        logPath = Path.Combine(logPath, "log-.txt");
+                    }
+                    actualConfiguration["Serilog:WriteTo:1:Args:path"] = logPath;
+                }
             }
+
+            lc.ReadFrom.Configuration(actualConfiguration);
 
             // If we need injected services for something
             // lc.ReadFrom.Services(services);
@@ -72,19 +86,23 @@ public static class LoggingExtensions
                 lc.Enrich.WithProperty("service_name", builder.Environment.ApplicationName);
             }
 
-            lc.WriteTo.GrafanaLoki(
-                "http://localhost:3100",
-                [
-                    // new LokiLabel() { Key = "service_name", Value = forgeSettings?.Application ?? "service-name" },
-                ],
-                [
-                    "level",
-                    "Environment",
-                    "Application",
-                    "MachineName",
-                    "StatusCode"
-                ]
-            );
+            if (!string.IsNullOrWhiteSpace(loggingConfig?.LokiUrl))
+            {
+                lc.WriteTo.GrafanaLoki(
+                    loggingConfig.LokiUrl,
+                    [
+                        // new LokiLabel() { Key = "service_name", Value = forgeSettings?.Application ?? "service-name" },
+                    ],
+                    [
+                        "level",
+                        "Environment",
+                        "Application",
+                        "MachineName",
+                        "StatusCode",
+                        "service_name"
+                    ]
+                );
+            }
         });
 
         if (forgeSettings != null)
@@ -130,12 +148,12 @@ public static class LoggingExtensions
 
     /// <summary>
     /// Setup our custom request logger <see cref="RequestLoggingMiddleware"/>.
-    /// Setup Prometheus /metrics endpoint.
     /// </summary>
     public static void UseForgeLogging(this WebApplication app)
     {
-        var logger = app.Services.GetRequiredService<ILogger<WebApplication>>();
+        var logger = app.Services.GetRequiredService<ILogger<Startup>>();
         var forgeSettings = app.Services.GetService<ForgeSettings>();
+
         if (forgeSettings != null)
         {
             logger.LogInformation("Built web application with {@Settings}", forgeSettings);
@@ -170,4 +188,7 @@ public static class LoggingExtensions
 
         return logger;
     }
+
+    // ReSharper disable once ClassNeverInstantiated.Local
+    private class Startup { }
 }
