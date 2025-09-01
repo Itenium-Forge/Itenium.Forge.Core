@@ -21,38 +21,37 @@ public static class LoggingExtensions
         var loggingConfig = builder.Configuration.GetSection("ForgeConfiguration:Logging").Get<LoggingConfiguration>();
         var forgeSettings = builder.Configuration.GetSection("Forge").Get<ForgeSettings>();
 
+        if (builder.Configuration.GetSection("Serilog").Exists())
+        {
+            if (!string.IsNullOrWhiteSpace(loggingConfig?.FilePath))
+                throw new Exception("Cannot have a custom Serilog appSettings and set the ForgeConfiguration:Logging:FilePath");
+        }
+        else
+        {
+            var assembly = Assembly.GetExecutingAssembly();
+            const string embeddedResourceName = "Itenium.Forge.Logging.serilog.settings.json";
+            using var defaultSerilogSettings = assembly.GetManifestResourceStream(embeddedResourceName)!;
+            var actualConfiguration = new ConfigurationBuilder()
+                .SetBasePath(AppContext.BaseDirectory)
+                .AddJsonStream(defaultSerilogSettings)
+                .Build();
+
+            if (!string.IsNullOrWhiteSpace(loggingConfig?.FilePath))
+            {
+                string logPath = loggingConfig.FilePath;
+                if (string.IsNullOrWhiteSpace(Path.GetExtension(logPath)))
+                {
+                    logPath = Path.Combine(logPath, "log-.txt");
+                }
+                actualConfiguration["Serilog:WriteTo:1:Args:path"] = logPath;
+            }
+
+            builder.Configuration.AddConfiguration(actualConfiguration);
+        }
+
         builder.Services.AddSerilog((services, lc) =>
         {
-            IConfigurationRoot actualConfiguration;
-            if (builder.Configuration.GetSection("Serilog").Exists())
-            {
-                actualConfiguration = builder.Configuration;
-
-                if (!string.IsNullOrWhiteSpace(loggingConfig?.FilePath))
-                    throw new Exception("Cannot have a custom Serilog appSettings and set the ForgeConfiguration:Logging:FilePath");
-            }
-            else
-            {
-                var assembly = Assembly.GetExecutingAssembly();
-                const string embeddedResourceName = "Itenium.Forge.Logging.serilog.settings.json";
-                using var defaultSerilogSettings = assembly.GetManifestResourceStream(embeddedResourceName)!;
-                actualConfiguration = new ConfigurationBuilder()
-                    .SetBasePath(AppContext.BaseDirectory)
-                    .AddJsonStream(defaultSerilogSettings)
-                    .Build();
-
-                if (!string.IsNullOrWhiteSpace(loggingConfig?.FilePath))
-                {
-                    string logPath = loggingConfig.FilePath;
-                    if (string.IsNullOrWhiteSpace(Path.GetExtension(logPath)))
-                    {
-                        logPath = Path.Combine(logPath, "log-.txt");
-                    }
-                    actualConfiguration["Serilog:WriteTo:1:Args:path"] = logPath;
-                }
-            }
-
-            lc.ReadFrom.Configuration(actualConfiguration);
+            lc.ReadFrom.Configuration(builder.Configuration);
 
             // If we need injected services for something
             // lc.ReadFrom.Services(services);
