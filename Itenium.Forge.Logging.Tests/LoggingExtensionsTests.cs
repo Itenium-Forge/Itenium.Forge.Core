@@ -149,7 +149,7 @@ public class LoggingExtensionsTests
         var app = builder.Build();
 
         var filePath = app.Configuration["Serilog:WriteTo:1:Args:path"];
-        Assert.That(filePath, Is.EqualTo(@"c:\temp\ExampleApp\log-.txt"));
+        Assert.That(filePath?.Replace("/", "\\"), Is.EqualTo(@"c:\temp\ExampleApp\log-.txt"));
     }
 
     private static ILogEventSink[] GetSinks(WebApplication app)
