@@ -11,6 +11,8 @@ Itenium.Forge.Core
 dotnet nuget add source --username OWNER --password TOKEN --store-password-in-clear-text --name itenium "https://nuget.pkg.github.com/Itenium-Forge/index.json"
 ```
 
+See [nuget credentials](https://github.com/dotnet/dotnet-docker/blob/main/documentation/scenarios/nuget-credentials.md) on how to use this in a Docker build.
+
 
 ## Packages
 
