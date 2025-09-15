@@ -1,4 +1,5 @@
 using Itenium.Forge.Controllers;
+using Itenium.Forge.Core;
 using Itenium.Forge.ExampleApp;
 using Itenium.Forge.Logging;
 using Itenium.Forge.Settings;
@@ -14,7 +15,7 @@ try
     builder.AddForgeLogging();
 
     builder.AddForgeControllers();
-    builder.AddForgeSwagger();
+    builder.AddForgeSwagger(typeof(ForgeSettings));
     
     WebApplication app = builder.Build();
     app.UseForgeLogging();

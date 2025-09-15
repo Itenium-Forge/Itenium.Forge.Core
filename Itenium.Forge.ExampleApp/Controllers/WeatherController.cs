@@ -1,3 +1,4 @@
+using Itenium.Forge.Core;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Itenium.Forge.ExampleApp.Controllers;
@@ -34,6 +35,12 @@ public class WeatherController : ControllerBase
             Summary = Summaries[Random.Shared.Next(Summaries.Length)]
         })
         .ToArray();
+    }
+
+    [HttpPost]
+    public void Get([FromQuery]ForgeSettings settings)
+    {
+        
     }
 }
 
