@@ -5,6 +5,9 @@ on:
     tags:
       - 'v*.*.*'
 
+env:
+  NUGET_FEED: https://nuget.pkg.github.com/Itenium-Forge/index.json
+
 jobs:
   publish-nugets:
     runs-on: ubuntu-latest
@@ -37,9 +40,9 @@ jobs:
 
       - name: 📤 Publish NuGet
         run: |
-          dotnet nuget push Itenium.Forge.Settings.${VERSION}.nupkg --source https://nuget.pkg.github.com/Itenium-Forge/index.json --api-key ${{ secrets.GITHUB_TOKEN }} --skip-duplicate
-          dotnet nuget push Itenium.Forge.Logging.${VERSION}.nupkg --source https://nuget.pkg.github.com/Itenium-Forge/index.json --api-key ${{ secrets.GITHUB_TOKEN }} --skip-duplicate
-          dotnet nuget push Itenium.Forge.Core.${VERSION}.nupkg --source https://nuget.pkg.github.com/Itenium-Forge/index.json --api-key ${{ secrets.GITHUB_TOKEN }} --skip-duplicate
-          dotnet nuget push Itenium.Forge.Swagger.${VERSION}.nupkg --source https://nuget.pkg.github.com/Itenium-Forge/index.json --api-key ${{ secrets.GITHUB_TOKEN }} --skip-duplicate
-          dotnet nuget push Itenium.Forge.Controllers.${VERSION}.nupkg --source https://nuget.pkg.github.com/Itenium-Forge/index.json --api-key ${{ secrets.GITHUB_TOKEN }} --skip-duplicate
-          dotnet nuget push Itenium.Forge.Security.${VERSION}.nupkg --source https://nuget.pkg.github.com/Itenium-Forge/index.json --api-key ${{ secrets.GITHUB_TOKEN }} --skip-duplicate
+          dotnet nuget push Itenium.Forge.Settings.${VERSION}.nupkg --source $NUGET_FEED --api-key ${{ secrets.GITHUB_TOKEN }} --skip-duplicate
+          dotnet nuget push Itenium.Forge.Logging.${VERSION}.nupkg --source $NUGET_FEED --api-key ${{ secrets.GITHUB_TOKEN }} --skip-duplicate
+          dotnet nuget push Itenium.Forge.Core.${VERSION}.nupkg --source $NUGET_FEED --api-key ${{ secrets.GITHUB_TOKEN }} --skip-duplicate
+          dotnet nuget push Itenium.Forge.Swagger.${VERSION}.nupkg --source $NUGET_FEED --api-key ${{ secrets.GITHUB_TOKEN }} --skip-duplicate
+          dotnet nuget push Itenium.Forge.Controllers.${VERSION}.nupkg --source $NUGET_FEED --api-key ${{ secrets.GITHUB_TOKEN }} --skip-duplicate
+          dotnet nuget push Itenium.Forge.Security.${VERSION}.nupkg --source $NUGET_FEED --api-key ${{ secrets.GITHUB_TOKEN }} --skip-duplicate
