@@ -10,13 +10,24 @@ public static class SwaggerExtensions
     /// Configure Swagger with XmlComments.
     /// Project must have: {GenerateDocumentationFile}true{/GenerateDocumentationFile}
     /// </summary>
-    public static void AddForgeSwagger(this WebApplicationBuilder builder)
+    /// <param name="builder">The WebApp builder</param>
+    /// <param name="typesFromOtherAssemblies">
+    /// Provide a type from each assembly that contains a class which is used as input
+    /// or output for a controller action method to also load its XmlComments xml file
+    /// </param>
+    public static void AddForgeSwagger(this WebApplicationBuilder builder, params Type[] typesFromOtherAssemblies)
     {
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen(options =>
         {
             var filePath = Path.Combine(AppContext.BaseDirectory, $"{builder.Environment.ApplicationName}.xml");
             options.IncludeXmlComments(filePath);
+
+            foreach (var type in typesFromOtherAssemblies)
+            {
+                var mlFilePath = Path.Combine(AppContext.BaseDirectory, $"{type.Assembly.GetName().Name}.xml");
+                options.IncludeXmlComments(mlFilePath);
+            }
 
             // TODO: This is part of Itenium.Forge.Security
             //options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
