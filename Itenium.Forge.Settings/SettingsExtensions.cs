@@ -34,8 +34,7 @@ public static class SettingsExtensions
 
         IConfigurationRoot config = configurationBuilder.Build();
 
-        var settings = new T();
-        config.Bind(settings);
+        var settings = config.Get<T>() ?? new T();
 
         if (string.IsNullOrWhiteSpace(settings.Forge.Environment))
             settings.Forge.Environment = environment;

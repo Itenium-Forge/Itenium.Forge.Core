@@ -16,6 +16,14 @@ public class ForgeSettingsTests
     }
 
     [Test]
+    public void Load_ConvertsEnumProperties_FromString()
+    {
+        var builder = WebApplication.CreateBuilder();
+        var settings = builder.AddForgeSettings<AppSettings>("Development");
+        Assert.That(settings.MyEnum, Is.EqualTo(AppSettingsEnum.Value2));
+    }
+
+    [Test]
     public void Load_SetsBuilderEnvironmentName()
     {
         var builder = WebApplication.CreateBuilder();
@@ -101,5 +109,13 @@ public class ForgeSettingsTests
     {
         public ForgeSettings Forge { get; } = new();
         public bool MyProp { get; set; }
+        public AppSettingsEnum MyEnum { get; set; }
+    }
+
+    private enum AppSettingsEnum
+    {
+        Value0,
+        Value1,
+        Value2
     }
 }
