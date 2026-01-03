@@ -1,7 +1,7 @@
 using Itenium.Forge.Security.OpenIddict;
 using Microsoft.AspNetCore.Identity;
 
-namespace Itenium.Forge.ExampleApp.Data;
+namespace Itenium.Forge.ExampleApp.Security;
 
 public static class SeedData
 {

@@ -1,3 +1,4 @@
+using Itenium.Forge.ExampleApp.Security;
 using Itenium.Forge.Security;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;

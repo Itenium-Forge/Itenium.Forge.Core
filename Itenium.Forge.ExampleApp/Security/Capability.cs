@@ -1,4 +1,4 @@
-namespace Itenium.Forge.Security;
+namespace Itenium.Forge.ExampleApp.Security;
 
 /// <summary>
 /// Fine-grained capabilities that can be assigned to roles.

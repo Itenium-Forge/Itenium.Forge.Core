@@ -2,6 +2,7 @@ using Itenium.Forge.Controllers;
 using Itenium.Forge.Core;
 using Itenium.Forge.ExampleApp;
 using Itenium.Forge.ExampleApp.Data;
+using Itenium.Forge.ExampleApp.Security;
 using Itenium.Forge.Logging;
 using Itenium.Forge.Security;
 using Itenium.Forge.Security.OpenIddict;
