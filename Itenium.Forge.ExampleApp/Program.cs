@@ -55,3 +55,6 @@ finally
 {
     await Log.CloseAndFlushAsync();
 }
+
+// Make Program class accessible for WebApplicationFactory in tests
+public partial class Program { }

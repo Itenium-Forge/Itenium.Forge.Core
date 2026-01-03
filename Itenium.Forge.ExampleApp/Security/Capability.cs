@@ -6,15 +6,6 @@ namespace Itenium.Forge.ExampleApp.Security;
 /// </summary>
 public enum Capability
 {
-    /// <summary>Read access to Resource X</summary>
     ReadResX,
-
-    /// <summary>Write access to Resource X</summary>
     WriteResX,
-
-    /// <summary>Read access to Resource Y</summary>
-    ReadResY,
-
-    /// <summary>Write access to Resource Y</summary>
-    WriteResY
 }
