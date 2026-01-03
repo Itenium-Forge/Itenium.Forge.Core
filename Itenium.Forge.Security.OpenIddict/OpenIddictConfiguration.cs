@@ -44,7 +44,8 @@ public class OpenIddictConfiguration
 
     /// <summary>
     /// Maps roles to their capabilities.
-    /// Key: role name, Value: list of capability names (must match Capability enum values).
+    /// Key: role name, Value: list of capability names.
+    /// Each capability name becomes an authorization policy.
     /// </summary>
     public Dictionary<string, List<string>> RoleCapabilities { get; set; } = new();
 }

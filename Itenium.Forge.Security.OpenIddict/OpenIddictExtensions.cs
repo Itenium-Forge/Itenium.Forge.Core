@@ -101,15 +101,18 @@ public static class OpenIddictExtensions
         // Configure authorization policies
         builder.Services.AddAuthorization(options =>
         {
-            // Role-based policies
-            options.AddPolicy("admin", policy => policy.RequireRole("admin"));
-            options.AddPolicy("user", policy => policy.RequireRole("user"));
-
-            // Capability-based policies (one policy per capability)
-            foreach (var capability in Enum.GetValues<Capability>())
+            foreach (var roleName in config.RoleCapabilities.Keys)
             {
-                options.AddPolicy(capability.ToString(), policy =>
-                    policy.RequireClaim("capability", capability.ToString()));
+                options.AddPolicy(roleName, policy => policy.RequireRole(roleName));
+            }
+
+            var allCapabilities = config.RoleCapabilities.Values
+                .SelectMany(c => c)
+                .Distinct();
+
+            foreach (var capability in allCapabilities)
+            {
+                options.AddPolicy(capability, policy => policy.RequireClaim("capability", capability));
             }
         });
 

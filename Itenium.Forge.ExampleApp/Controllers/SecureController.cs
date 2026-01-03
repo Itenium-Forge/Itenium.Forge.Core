@@ -37,8 +37,6 @@ public class SecureController : ControllerBase
     [HttpGet("authenticated")]
     public IActionResult Authenticated()
     {
-        _logger.LogInformation("Authenticated endpoint accessed by {UserName}", _currentUser.UserName);
-
         return Ok(new
         {
             message = "You are authenticated!",
