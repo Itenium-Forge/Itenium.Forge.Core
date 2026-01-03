@@ -67,7 +67,7 @@ public class AuthorizationController : ControllerBase
                     }));
             }
 
-            var principal = await CreateClaimsPrincipalAsync(user, request);
+            var principal = await CreateClaimsPrincipal(user, request);
             return SignIn(principal, OpenIddictServerAspNetCoreDefaults.AuthenticationScheme);
         }
 
@@ -99,7 +99,7 @@ public class AuthorizationController : ControllerBase
                     }));
             }
 
-            var principal = await CreateClaimsPrincipalAsync(user, request);
+            var principal = await CreateClaimsPrincipal(user, request);
             return SignIn(principal, OpenIddictServerAspNetCoreDefaults.AuthenticationScheme);
         }
 
@@ -131,14 +131,14 @@ public class AuthorizationController : ControllerBase
                     }));
             }
 
-            var principal = await CreateClaimsPrincipalAsync(user, request);
+            var principal = await CreateClaimsPrincipal(user, request);
             return SignIn(principal, OpenIddictServerAspNetCoreDefaults.AuthenticationScheme);
         }
 
         throw new InvalidOperationException("The specified grant type is not supported.");
     }
 
-    private async Task<ClaimsPrincipal> CreateClaimsPrincipalAsync(ForgeUser user, OpenIddictRequest request)
+    private async Task<ClaimsPrincipal> CreateClaimsPrincipal(ForgeUser user, OpenIddictRequest request)
     {
         var identity = new ClaimsIdentity(
             authenticationType: OpenIddictServerAspNetCoreDefaults.AuthenticationScheme,
@@ -162,14 +162,12 @@ public class AuthorizationController : ControllerBase
         {
             identity.AddClaim(new Claim(Claims.Role, roleName));
 
-            // Add capability claims from the role
             var role = await _roleManager.FindByNameAsync(roleName);
             if (role != null)
             {
                 var roleClaims = await _roleManager.GetClaimsAsync(role);
                 foreach (var claim in roleClaims.Where(c => c.Type == "capability"))
                 {
-                    // Avoid duplicate capability claims
                     if (!identity.HasClaim(claim.Type, claim.Value))
                     {
                         identity.AddClaim(new Claim(claim.Type, claim.Value));
