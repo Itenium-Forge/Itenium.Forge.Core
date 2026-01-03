@@ -17,13 +17,16 @@ public class AuthorizationController : ControllerBase
 {
     private readonly SignInManager<ForgeUser> _signInManager;
     private readonly UserManager<ForgeUser> _userManager;
+    private readonly RoleManager<IdentityRole> _roleManager;
 
     public AuthorizationController(
         SignInManager<ForgeUser> signInManager,
-        UserManager<ForgeUser> userManager)
+        UserManager<ForgeUser> userManager,
+        RoleManager<IdentityRole> roleManager)
     {
         _signInManager = signInManager;
         _userManager = userManager;
+        _roleManager = roleManager;
     }
 
     /// <summary>
@@ -153,11 +156,26 @@ public class AuthorizationController : ControllerBase
             identity.AddClaim(new Claim(Claims.EmailVerified, user.EmailConfirmed.ToString().ToLower()));
         }
 
-        // Add roles
+        // Add roles and their capabilities
         var roles = await _userManager.GetRolesAsync(user);
-        foreach (var role in roles)
+        foreach (var roleName in roles)
         {
-            identity.AddClaim(new Claim(Claims.Role, role));
+            identity.AddClaim(new Claim(Claims.Role, roleName));
+
+            // Add capability claims from the role
+            var role = await _roleManager.FindByNameAsync(roleName);
+            if (role != null)
+            {
+                var roleClaims = await _roleManager.GetClaimsAsync(role);
+                foreach (var claim in roleClaims.Where(c => c.Type == "capability"))
+                {
+                    // Avoid duplicate capability claims
+                    if (!identity.HasClaim(claim.Type, claim.Value))
+                    {
+                        identity.AddClaim(new Claim(claim.Type, claim.Value));
+                    }
+                }
+            }
         }
 
         var principal = new ClaimsPrincipal(identity);
@@ -198,6 +216,10 @@ public class AuthorizationController : ControllerBase
             case Claims.Role:
                 yield return Destinations.AccessToken;
                 yield return Destinations.IdentityToken;
+                break;
+
+            case "capability":
+                yield return Destinations.AccessToken;
                 break;
 
             default:

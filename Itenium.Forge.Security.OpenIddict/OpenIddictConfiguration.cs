@@ -1,3 +1,5 @@
+using Itenium.Forge.Security;
+
 namespace Itenium.Forge.Security.OpenIddict;
 
 /// <summary>
@@ -41,4 +43,20 @@ public class OpenIddictConfiguration
     /// Refresh token lifetime in days.
     /// </summary>
     public int RefreshTokenLifetimeDays { get; set; } = 14;
+
+    /// <summary>
+    /// Maps roles to their capabilities.
+    /// Key: role name, Value: list of capability names (must match Capability enum values).
+    /// </summary>
+    /// <example>
+    /// "RoleCapabilities": {
+    ///   "admin": ["ReadResX", "WriteResX", "ReadResY", "WriteResY"],
+    ///   "user": ["ReadResX", "ReadResY"]
+    /// }
+    /// </example>
+    public Dictionary<string, List<string>> RoleCapabilities { get; set; } = new()
+    {
+        ["admin"] = [nameof(Capability.ReadResX), nameof(Capability.WriteResX), nameof(Capability.ReadResY), nameof(Capability.WriteResY)],
+        ["user"] = [nameof(Capability.ReadResX), nameof(Capability.ReadResY)]
+    };
 }

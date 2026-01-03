@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Identity;
@@ -100,8 +101,16 @@ public static class OpenIddictExtensions
         // Configure authorization policies
         builder.Services.AddAuthorization(options =>
         {
+            // Role-based policies
             options.AddPolicy("admin", policy => policy.RequireRole("admin"));
             options.AddPolicy("user", policy => policy.RequireRole("user"));
+
+            // Capability-based policies (one policy per capability)
+            foreach (var capability in Enum.GetValues<Capability>())
+            {
+                options.AddPolicy(capability.ToString(), policy =>
+                    policy.RequireClaim("capability", capability.ToString()));
+            }
         });
 
         // Store config for seeding
@@ -185,16 +194,27 @@ public static class OpenIddictExtensions
         var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ForgeUser>>();
         var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
 
-        // Create roles
-        foreach (var roleName in new[] { "admin", "user" })
+        // Create roles and assign capabilities
+        foreach (var (roleName, capabilities) in config.RoleCapabilities)
         {
-            if (!await roleManager.RoleExistsAsync(roleName))
+            var role = await roleManager.FindByNameAsync(roleName);
+            if (role == null)
             {
-                var role = new IdentityRole(roleName);
+                role = new IdentityRole(roleName);
                 var result = await roleManager.CreateAsync(role);
                 if (!result.Succeeded)
                 {
                     throw new InvalidOperationException($"Failed to create role '{roleName}': {string.Join(", ", result.Errors.Select(e => e.Description))}");
+                }
+            }
+
+            // Add capability claims to the role
+            var existingClaims = await roleManager.GetClaimsAsync(role);
+            foreach (var capability in capabilities)
+            {
+                if (!existingClaims.Any(c => c.Type == "capability" && c.Value == capability))
+                {
+                    await roleManager.AddClaimAsync(role, new Claim("capability", capability));
                 }
             }
         }

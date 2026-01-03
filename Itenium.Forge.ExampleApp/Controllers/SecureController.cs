@@ -75,4 +75,62 @@ public class SecureController : ControllerBase
             userName = _currentUser.UserName
         });
     }
+
+    /// <summary>
+    /// Requires the ReadResX capability
+    /// </summary>
+    [Authorize(Policy = nameof(Capability.ReadResX))]
+    [HttpGet("resx")]
+    public IActionResult ReadResX()
+    {
+        return Ok(new
+        {
+            message = "You have ReadResX capability",
+            userName = _currentUser.UserName,
+            data = "Resource X data here..."
+        });
+    }
+
+    /// <summary>
+    /// Requires the WriteResX capability
+    /// </summary>
+    [Authorize(Policy = nameof(Capability.WriteResX))]
+    [HttpPost("resx")]
+    public IActionResult WriteResX()
+    {
+        return Ok(new
+        {
+            message = "You have WriteResX capability - write operation allowed",
+            userName = _currentUser.UserName
+        });
+    }
+
+    /// <summary>
+    /// Requires the ReadResY capability
+    /// </summary>
+    [Authorize(Policy = nameof(Capability.ReadResY))]
+    [HttpGet("resy")]
+    public IActionResult ReadResY()
+    {
+        return Ok(new
+        {
+            message = "You have ReadResY capability",
+            userName = _currentUser.UserName,
+            data = "Resource Y data here..."
+        });
+    }
+
+    /// <summary>
+    /// Requires the WriteResY capability
+    /// </summary>
+    [Authorize(Policy = nameof(Capability.WriteResY))]
+    [HttpPost("resy")]
+    public IActionResult WriteResY()
+    {
+        return Ok(new
+        {
+            message = "You have WriteResY capability - write operation allowed",
+            userName = _currentUser.UserName
+        });
+    }
 }
