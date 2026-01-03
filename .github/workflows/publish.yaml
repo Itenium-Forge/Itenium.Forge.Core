@@ -35,15 +35,12 @@ jobs:
       - name: 🛠️ Build
         run: dotnet build --no-restore --configuration Release /p:Version=${VERSION}
 
-      - name: 📦 Create NuGet
-        run: dotnet pack --no-build --configuration Release /p:Version=${VERSION} --output .
+      - name: 📦 Create NuGet packages
+        run: dotnet pack --no-build --configuration Release /p:Version=${VERSION} --output ./nupkgs
 
-      - name: 📤 Publish NuGet
+      - name: 📤 Publish NuGet packages
         run: |
-          dotnet nuget push Itenium.Forge.Settings.${VERSION}.nupkg --source $NUGET_FEED --api-key ${{ secrets.GITHUB_TOKEN }} --skip-duplicate
-          dotnet nuget push Itenium.Forge.Logging.${VERSION}.nupkg --source $NUGET_FEED --api-key ${{ secrets.GITHUB_TOKEN }} --skip-duplicate
-          dotnet nuget push Itenium.Forge.Core.${VERSION}.nupkg --source $NUGET_FEED --api-key ${{ secrets.GITHUB_TOKEN }} --skip-duplicate
-          dotnet nuget push Itenium.Forge.Swagger.${VERSION}.nupkg --source $NUGET_FEED --api-key ${{ secrets.GITHUB_TOKEN }} --skip-duplicate
-          dotnet nuget push Itenium.Forge.Controllers.${VERSION}.nupkg --source $NUGET_FEED --api-key ${{ secrets.GITHUB_TOKEN }} --skip-duplicate
-          dotnet nuget push Itenium.Forge.Security.${VERSION}.nupkg --source $NUGET_FEED --api-key ${{ secrets.GITHUB_TOKEN }} --skip-duplicate
-          dotnet nuget push Itenium.Forge.Security.OpenIddict.${VERSION}.nupkg --source $NUGET_FEED --api-key ${{ secrets.GITHUB_TOKEN }} --skip-duplicate
+          for package in ./nupkgs/*.nupkg; do
+            echo "Publishing $package"
+            dotnet nuget push "$package" --source $NUGET_FEED --api-key ${{ secrets.GITHUB_TOKEN }} --skip-duplicate
+          done
