@@ -118,7 +118,7 @@ public static class OpenIddictExtensions
     }
 
     /// <summary>
-    /// Seeds the default OpenIddict client and test users.
+    /// Seeds OpenIddict scopes, client application, roles and capabilities.
     /// Call this after app.Build() to ensure the database is ready.
     /// </summary>
     public static async Task SeedOpenIddictDataAsync(this WebApplication app)
@@ -190,11 +190,9 @@ public static class OpenIddictExtensions
             }
         }
 
-        // Seed test users
-        var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ForgeUser>>();
+        // Seed roles and their capabilities
         var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
 
-        // Create roles and assign capabilities
         foreach (var (roleName, capabilities) in config.RoleCapabilities)
         {
             var role = await roleManager.FindByNameAsync(roleName);
@@ -216,44 +214,6 @@ public static class OpenIddictExtensions
                 {
                     await roleManager.AddClaimAsync(role, new Claim("capability", capability));
                 }
-            }
-        }
-
-        // Create admin user
-        var existingAdmin = await userManager.FindByEmailAsync("admin@test.local");
-        if (existingAdmin == null)
-        {
-            var admin = new ForgeUser
-            {
-                UserName = "admin",
-                Email = "admin@test.local",
-                EmailConfirmed = true,
-                FirstName = "Admin",
-                LastName = "User"
-            };
-            var createResult = await userManager.CreateAsync(admin, "AdminPassword123!");
-            if (createResult.Succeeded)
-            {
-                await userManager.AddToRolesAsync(admin, ["admin", "user"]);
-            }
-        }
-
-        // Create regular user
-        var existingUser = await userManager.FindByEmailAsync("user@test.local");
-        if (existingUser == null)
-        {
-            var user = new ForgeUser
-            {
-                UserName = "user",
-                Email = "user@test.local",
-                EmailConfirmed = true,
-                FirstName = "Regular",
-                LastName = "User"
-            };
-            var createResult = await userManager.CreateAsync(user, "UserPassword123!");
-            if (createResult.Succeeded)
-            {
-                await userManager.AddToRoleAsync(user, "user");
             }
         }
     }

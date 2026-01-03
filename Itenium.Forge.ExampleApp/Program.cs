@@ -33,6 +33,7 @@ try
         await db.Database.EnsureCreatedAsync();
     }
     await app.SeedOpenIddictDataAsync();
+    await app.SeedTestUsersAsync();
 
     app.UseForgeLogging();
     app.UseForgeSecurity();
