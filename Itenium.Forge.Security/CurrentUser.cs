@@ -6,7 +6,7 @@ namespace Itenium.Forge.Security;
 /// <summary>
 /// Implementation of ICurrentUser that extracts user information from the HTTP context.
 /// </summary>
-internal class CurrentUser : ICurrentUser
+public class CurrentUser : ICurrentUser
 {
     private readonly IHttpContextAccessor _httpContextAccessor;
 
@@ -15,7 +15,7 @@ internal class CurrentUser : ICurrentUser
         _httpContextAccessor = httpContextAccessor;
     }
 
-    private ClaimsPrincipal? User => _httpContextAccessor.HttpContext?.User;
+    protected ClaimsPrincipal? User => _httpContextAccessor.HttpContext?.User;
 
     public string? UserId => User?.FindFirstValue(ClaimTypes.NameIdentifier)
         ?? User?.FindFirstValue("sub");
