@@ -4,7 +4,8 @@ param(
     [string]$Password = "UserPassword123!"
 )
 
-# Or: admin / AdminPassword123!
+# user / UserPassword123!
+# admin / AdminPassword123!
 
 $body = @{
     grant_type = "password"

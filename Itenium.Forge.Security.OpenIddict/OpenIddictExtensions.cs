@@ -1,9 +1,11 @@
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using OpenIddict.Abstractions;
+using OpenIddict.Validation.AspNetCore;
 
 namespace Itenium.Forge.Security.OpenIddict;
 
@@ -87,6 +89,13 @@ public static class OpenIddictExtensions
                 options.UseLocalServer();
                 options.UseAspNetCore();
             });
+
+        // Set OpenIddict validation as the default authentication scheme for API endpoints
+        builder.Services.Configure<AuthenticationOptions>(options =>
+        {
+            options.DefaultAuthenticateScheme = OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme;
+            options.DefaultChallengeScheme = OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme;
+        });
 
         // Configure authorization policies
         builder.Services.AddAuthorization(options =>

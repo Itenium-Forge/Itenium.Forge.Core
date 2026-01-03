@@ -38,7 +38,7 @@ internal class CurrentUser : ICurrentUser
             var roles = User.FindAll(ClaimTypes.Role).Select(c => c.Value).ToList();
 
             // Also check Keycloak's realm_access.roles structure (flattened by our claim transformer)
-            roles.AddRange(User.FindAll("roles").Select(c => c.Value));
+            roles.AddRange(User.FindAll("role").Select(c => c.Value));
 
             return roles.Distinct();
         }
