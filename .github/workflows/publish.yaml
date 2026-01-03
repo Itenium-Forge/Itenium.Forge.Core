@@ -46,3 +46,4 @@ jobs:
           dotnet nuget push Itenium.Forge.Swagger.${VERSION}.nupkg --source $NUGET_FEED --api-key ${{ secrets.GITHUB_TOKEN }} --skip-duplicate
           dotnet nuget push Itenium.Forge.Controllers.${VERSION}.nupkg --source $NUGET_FEED --api-key ${{ secrets.GITHUB_TOKEN }} --skip-duplicate
           dotnet nuget push Itenium.Forge.Security.${VERSION}.nupkg --source $NUGET_FEED --api-key ${{ secrets.GITHUB_TOKEN }} --skip-duplicate
+          dotnet nuget push Itenium.Forge.Security.OpenIddict.${VERSION}.nupkg --source $NUGET_FEED --api-key ${{ secrets.GITHUB_TOKEN }} --skip-duplicate
