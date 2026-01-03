@@ -29,29 +29,30 @@ public static class SwaggerExtensions
                 options.IncludeXmlComments(mlFilePath);
             }
 
-            // TODO: This is part of Itenium.Forge.Security
-            //options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
-            //{
-            //    Name = "Authorization",
-            //    Type = SecuritySchemeType.Http,
-            //    Scheme = "Bearer",
-            //    In = ParameterLocation.Header,
-            //});
+            options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+            {
+                Name = "Authorization",
+                Description = "JWT Authorization header using the Bearer scheme. Example: \"Bearer {token}\"",
+                Type = SecuritySchemeType.Http,
+                Scheme = "bearer",
+                BearerFormat = "JWT",
+                In = ParameterLocation.Header,
+            });
 
-            //options.AddSecurityRequirement(new OpenApiSecurityRequirement
-            //{
-            //    {
-            //        new OpenApiSecurityScheme
-            //        {
-            //            Reference = new OpenApiReference
-            //            {
-            //                Type = ReferenceType.SecurityScheme,
-            //                Id = "Bearer"
-            //            }
-            //        },
-            //        []
-            //    }
-            //});
+            options.AddSecurityRequirement(new OpenApiSecurityRequirement
+            {
+                {
+                    new OpenApiSecurityScheme
+                    {
+                        Reference = new OpenApiReference
+                        {
+                            Type = ReferenceType.SecurityScheme,
+                            Id = "Bearer"
+                        }
+                    },
+                    []
+                }
+            });
         });
     }
 

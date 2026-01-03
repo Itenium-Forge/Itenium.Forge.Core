@@ -2,6 +2,7 @@ using Itenium.Forge.Controllers;
 using Itenium.Forge.Core;
 using Itenium.Forge.ExampleApp;
 using Itenium.Forge.Logging;
+using Itenium.Forge.Security;
 using Itenium.Forge.Settings;
 using Itenium.Forge.Swagger;
 using Serilog;
@@ -13,14 +14,14 @@ try
     var builder = WebApplication.CreateBuilder(args);
     var settings = builder.AddForgeSettings<ExampleSettings>();
     builder.AddForgeLogging();
+    builder.AddForgeSecurity();
 
     builder.AddForgeControllers();
     builder.AddForgeSwagger(typeof(ForgeSettings));
-    
+
     WebApplication app = builder.Build();
     app.UseForgeLogging();
-
-    // app.UseAuthorization();
+    app.UseForgeSecurity();
 
     app.UseForgeControllers();
     if (app.Environment.IsDevelopment())
