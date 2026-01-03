@@ -16,8 +16,6 @@ public class ForgeIdentityDbContext : IdentityDbContext<ForgeUser>
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
-
-        // Customize table names if desired
         builder.Entity<ForgeUser>().ToTable("Users");
     }
 }

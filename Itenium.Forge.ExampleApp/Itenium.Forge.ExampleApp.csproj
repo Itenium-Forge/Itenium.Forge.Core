@@ -10,9 +10,13 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="9.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\Itenium.Forge.Controllers\Itenium.Forge.Controllers.csproj" />
     <ProjectReference Include="..\Itenium.Forge.Logging\Itenium.Forge.Logging.csproj" />
-    <ProjectReference Include="..\Itenium.Forge.Security.Keycloak\Itenium.Forge.Security.Keycloak.csproj" />
+    <ProjectReference Include="..\Itenium.Forge.Security.OpenIddict\Itenium.Forge.Security.OpenIddict.csproj" />
     <ProjectReference Include="..\Itenium.Forge.Settings\Itenium.Forge.Settings.csproj" />
     <ProjectReference Include="..\Itenium.Forge.Swagger\Itenium.Forge.Swagger.csproj" />
   </ItemGroup>

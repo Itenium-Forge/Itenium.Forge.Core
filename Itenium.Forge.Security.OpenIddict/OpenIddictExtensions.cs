@@ -27,35 +27,29 @@ public static class OpenIddictExtensions
             .GetSection("ForgeConfiguration:Security")
             .Get<OpenIddictConfiguration>() ?? new OpenIddictConfiguration();
 
-        // Register common security services
         builder.Services.AddForgeSecurityCore();
-
-        // Add DbContext
         builder.Services.AddDbContext<TContext>(configureDbContext);
 
-        // Add ASP.NET Core Identity
         builder.Services.AddIdentity<ForgeUser, IdentityRole>(options =>
             {
-                options.Password.RequireDigit = true;
-                options.Password.RequireLowercase = true;
-                options.Password.RequireUppercase = true;
-                options.Password.RequireNonAlphanumeric = false;
-                options.Password.RequiredLength = 8;
+                //options.Password.RequireDigit = true;
+                //options.Password.RequireLowercase = true;
+                //options.Password.RequireUppercase = true;
+                //options.Password.RequireNonAlphanumeric = false;
+                options.Password.RequiredLength = 16;
                 options.User.RequireUniqueEmail = true;
             })
             .AddEntityFrameworkStores<TContext>()
             .AddDefaultTokenProviders();
 
-        // Add OpenIddict
-        builder.Services.AddOpenIddict()
+        builder.Services
+            .AddOpenIddict()
             .AddCore(options =>
             {
-                options.UseEntityFrameworkCore()
-                    .UseDbContext<TContext>();
+                options.UseEntityFrameworkCore().UseDbContext<TContext>();
             })
             .AddServer(options =>
             {
-                // Enable the required endpoints
                 options.SetAuthorizationEndpointUris("/connect/authorize")
                     .SetTokenEndpointUris("/connect/token")
                     .SetUserInfoEndpointUris("/connect/userinfo")
