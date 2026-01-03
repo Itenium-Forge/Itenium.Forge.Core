@@ -32,7 +32,7 @@ public static class SwaggerExtensions
             options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
             {
                 Name = "Authorization",
-                Description = "JWT Authorization header using the Bearer scheme. Example: \"Bearer {token}\"",
+                Description = "JWT Authorization header using the Bearer scheme. Enter token without 'Bearer ' prefix",
                 Type = SecuritySchemeType.Http,
                 Scheme = "bearer",
                 BearerFormat = "JWT",

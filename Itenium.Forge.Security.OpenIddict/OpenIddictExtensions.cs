@@ -79,7 +79,8 @@ public static class OpenIddictExtensions
                     .EnableAuthorizationEndpointPassthrough()
                     .EnableTokenEndpointPassthrough()
                     .EnableUserInfoEndpointPassthrough()
-                    .EnableEndSessionEndpointPassthrough();
+                    .EnableEndSessionEndpointPassthrough()
+                    .DisableTransportSecurityRequirement(); // Allow HTTP in development
             })
             .AddValidation(options =>
             {
@@ -106,10 +107,26 @@ public static class OpenIddictExtensions
     {
         using var scope = app.Services.CreateScope();
         var config = scope.ServiceProvider.GetRequiredService<OpenIddictConfiguration>();
-        var manager = scope.ServiceProvider.GetRequiredService<IOpenIddictApplicationManager>();
+        var applicationManager = scope.ServiceProvider.GetRequiredService<IOpenIddictApplicationManager>();
+        var scopeManager = scope.ServiceProvider.GetRequiredService<IOpenIddictScopeManager>();
+
+        // Register scopes
+        var scopes = new[] { "openid", "profile", "email", "roles" };
+        foreach (var scopeName in scopes)
+        {
+            if (await scopeManager.FindByNameAsync(scopeName) == null)
+            {
+                await scopeManager.CreateAsync(new OpenIddictScopeDescriptor
+                {
+                    Name = scopeName,
+                    DisplayName = scopeName.Substring(0, 1).ToUpper() + scopeName.Substring(1),
+                    Resources = { "forge-api" }
+                });
+            }
+        }
 
         // Create the SPA client if it doesn't exist
-        var client = await manager.FindByClientIdAsync(config.ClientId);
+        var client = await applicationManager.FindByClientIdAsync(config.ClientId);
         if (client == null)
         {
             var redirectUris = config.RedirectUris
@@ -120,7 +137,7 @@ public static class OpenIddictExtensions
                 .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
                 .ToList();
 
-            await manager.CreateAsync(new OpenIddictApplicationDescriptor
+            await applicationManager.CreateAsync(new OpenIddictApplicationDescriptor
             {
                 ClientId = config.ClientId,
                 DisplayName = config.ClientDisplayName,
@@ -129,16 +146,21 @@ public static class OpenIddictExtensions
                 PostLogoutRedirectUris = { new Uri(postLogoutUris.First()) },
                 Permissions =
                 {
+                    // Endpoints
                     OpenIddictConstants.Permissions.Endpoints.Authorization,
                     OpenIddictConstants.Permissions.Endpoints.Token,
                     OpenIddictConstants.Permissions.Endpoints.EndSession,
+                    // Grant types
                     OpenIddictConstants.Permissions.GrantTypes.AuthorizationCode,
                     OpenIddictConstants.Permissions.GrantTypes.Password,
                     OpenIddictConstants.Permissions.GrantTypes.RefreshToken,
+                    // Response types
                     OpenIddictConstants.Permissions.ResponseTypes.Code,
-                    OpenIddictConstants.Permissions.Scopes.Email,
+                    // Scopes
+                    OpenIddictConstants.Permissions.Prefixes.Scope + "openid",
                     OpenIddictConstants.Permissions.Scopes.Profile,
-                    OpenIddictConstants.Permissions.Scopes.Roles
+                    OpenIddictConstants.Permissions.Scopes.Email,
+                    OpenIddictConstants.Permissions.Prefixes.Scope + "roles",
                 }
             });
 
