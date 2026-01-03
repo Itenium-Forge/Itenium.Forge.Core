@@ -1,5 +1,6 @@
 using System.Net;
 using System.Net.Http.Headers;
+using System.Text.Json;
 
 namespace Itenium.Forge.ExampleApp.Tests;
 
@@ -179,6 +180,42 @@ public class SecureControllerTests
         var response = await _client.SendAsync(request);
 
         Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
+    }
+
+    #endregion
+
+    #region Custom Claims
+
+    [Test]
+    public async Task Department_WithAdminToken_ReturnsITDepartment()
+    {
+        var token = await TokenHelper.GetAdminTokenAsync(_client);
+        using var request = new HttpRequestMessage(HttpMethod.Get, "/api/Secure/department");
+        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+        var response = await _client.SendAsync(request);
+
+        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
+
+        var content = await response.Content.ReadAsStringAsync();
+        var json = JsonSerializer.Deserialize<JsonElement>(content);
+        Assert.That(json.GetProperty("department").GetString(), Is.EqualTo("IT"));
+    }
+
+    [Test]
+    public async Task Department_WithUserToken_ReturnsSalesDepartment()
+    {
+        var token = await TokenHelper.GetUserTokenAsync(_client);
+        using var request = new HttpRequestMessage(HttpMethod.Get, "/api/Secure/department");
+        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+        var response = await _client.SendAsync(request);
+
+        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
+
+        var content = await response.Content.ReadAsStringAsync();
+        var json = JsonSerializer.Deserialize<JsonElement>(content);
+        Assert.That(json.GetProperty("department").GetString(), Is.EqualTo("Sales"));
     }
 
     #endregion

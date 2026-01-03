@@ -12,10 +12,10 @@ namespace Itenium.Forge.ExampleApp.Controllers;
 [Route("api/[controller]")]
 public class SecureController : ControllerBase
 {
-    private readonly ICurrentUser _currentUser;
+    private readonly IExampleAppUser _currentUser;
     private readonly ILogger<SecureController> _logger;
 
-    public SecureController(ICurrentUser currentUser, ILogger<SecureController> logger)
+    public SecureController(IExampleAppUser currentUser, ILogger<SecureController> logger)
     {
         _currentUser = currentUser;
         _logger = logger;
@@ -101,6 +101,20 @@ public class SecureController : ControllerBase
         {
             message = "You have WriteResX capability - write operation allowed",
             userName = _currentUser.UserName
+        });
+    }
+
+    /// <summary>
+    /// Demonstrates custom claims - returns the user's department
+    /// </summary>
+    [Authorize]
+    [HttpGet("department")]
+    public IActionResult GetDepartment()
+    {
+        return Ok(new
+        {
+            userName = _currentUser.UserName,
+            department = _currentUser.Department
         });
     }
 }

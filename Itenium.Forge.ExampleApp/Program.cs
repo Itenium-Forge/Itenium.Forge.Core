@@ -22,6 +22,8 @@ try
     var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
     builder.AddForgeOpenIddict<AppDbContext>(options => options.UseSqlite(connectionString));
 
+    builder.Services.AddScoped<IExampleAppUser, ExampleAppUser>();
+
     builder.AddForgeControllers();
     builder.AddForgeSwagger(typeof(ForgeSettings));
 

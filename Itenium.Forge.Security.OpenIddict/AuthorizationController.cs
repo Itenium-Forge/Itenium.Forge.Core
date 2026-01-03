@@ -176,6 +176,16 @@ public class AuthorizationController : ControllerBase
             }
         }
 
+        // Add user-specific claims
+        var userClaims = await _userManager.GetClaimsAsync(user);
+        foreach (var claim in userClaims)
+        {
+            if (!identity.HasClaim(claim.Type, claim.Value))
+            {
+                identity.AddClaim(claim);
+            }
+        }
+
         var principal = new ClaimsPrincipal(identity);
 
         // Set the scopes granted to the client application
