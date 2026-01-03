@@ -43,6 +43,11 @@ public class OpenIddictConfiguration
     public int RefreshTokenLifetimeDays { get; set; } = 14;
 
     /// <summary>
+    /// When true, tokens are plain JWTs, not JWEs.
+    /// </summary>
+    public bool DisableAccessTokenEncryption { get; set; } = false;
+
+    /// <summary>
     /// Maps roles to their capabilities.
     /// Key: role name, Value: list of capability names.
     /// Each capability name becomes an authorization policy.

@@ -77,13 +77,18 @@ public static class OpenIddictExtensions
                 options.AddDevelopmentEncryptionCertificate()
                     .AddDevelopmentSigningCertificate();
 
+                if (config.DisableAccessTokenEncryption)
+                {
+                    options.DisableAccessTokenEncryption();
+                }
+
                 // Register the ASP.NET Core host
                 options.UseAspNetCore()
                     .EnableAuthorizationEndpointPassthrough()
                     .EnableTokenEndpointPassthrough()
                     .EnableUserInfoEndpointPassthrough()
                     .EnableEndSessionEndpointPassthrough()
-                    .DisableTransportSecurityRequirement(); // Allow HTTP in development
+                    .DisableTransportSecurityRequirement(); // TODO: Allowing HTTP should be disabled when deployed
             })
             .AddValidation(options =>
             {
