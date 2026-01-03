@@ -17,5 +17,6 @@ public class ForgeIdentityDbContext : IdentityDbContext<ForgeUser>
     {
         base.OnModelCreating(builder);
         builder.Entity<ForgeUser>().ToTable("Users");
+        builder.UseOpenIddict();
     }
 }
