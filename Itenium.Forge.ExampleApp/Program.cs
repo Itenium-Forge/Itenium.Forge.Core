@@ -3,6 +3,7 @@ using Itenium.Forge.Core;
 using Itenium.Forge.ExampleApp;
 using Itenium.Forge.Logging;
 using Itenium.Forge.Security;
+using Itenium.Forge.Security.Keycloak;
 using Itenium.Forge.Settings;
 using Itenium.Forge.Swagger;
 using Serilog;
@@ -14,7 +15,7 @@ try
     var builder = WebApplication.CreateBuilder(args);
     var settings = builder.AddForgeSettings<ExampleSettings>();
     builder.AddForgeLogging();
-    builder.AddForgeSecurity();
+    builder.AddForgeKeycloak();
 
     builder.AddForgeControllers();
     builder.AddForgeSwagger(typeof(ForgeSettings));

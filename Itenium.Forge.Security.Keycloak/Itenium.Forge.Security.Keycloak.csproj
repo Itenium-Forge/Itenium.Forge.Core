@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net9.0</TargetFramework>
@@ -11,12 +11,12 @@
 
   <PropertyGroup>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <PackageId>Itenium.Forge.Security</PackageId>
+    <PackageId>Itenium.Forge.Security.Keycloak</PackageId>
     <Version>0.0.0</Version>
     <Authors>Itenium</Authors>
     <Company>Itenium</Company>
-    <Description>Common security abstractions.</Description>
-    <PackageTags>security configuration</PackageTags>
+    <Description>Keycloak JWT authentication for Forge applications.</Description>
+    <PackageTags>security keycloak jwt authentication</PackageTags>
     <PackageProjectUrl>https://github.com/Itenium-Forge</PackageProjectUrl>
     <RepositoryUrl>https://github.com/Itenium-Forge/Itenium.Forge.Core</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
@@ -28,6 +28,7 @@
     <IncludeSymbols>true</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
   </PropertyGroup>
+
   <ItemGroup>
     <None Include=".\README.md" Pack="true" PackagePath="" />
     <None Include="..\icon.png" Link="icon.png" Pack="true" Visible="false" PackagePath="" />
@@ -38,7 +39,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Serilog" Version="4.3.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="9.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Itenium.Forge.Security\Itenium.Forge.Security.csproj" />
   </ItemGroup>
 
 </Project>

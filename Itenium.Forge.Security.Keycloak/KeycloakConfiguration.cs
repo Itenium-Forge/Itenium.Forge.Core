@@ -1,10 +1,10 @@
-namespace Itenium.Forge.Security;
+namespace Itenium.Forge.Security.Keycloak;
 
 /// <summary>
 /// Configuration for Keycloak/OIDC authentication.
 /// Loaded from appsettings.json under ForgeConfiguration:Security
 /// </summary>
-internal class SecurityConfiguration
+public class KeycloakConfiguration
 {
     /// <summary>
     /// The Keycloak realm URL (e.g., http://localhost:8080/realms/itenium)

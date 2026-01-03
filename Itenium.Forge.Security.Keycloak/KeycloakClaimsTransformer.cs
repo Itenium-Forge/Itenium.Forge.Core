@@ -2,7 +2,7 @@ using System.Security.Claims;
 using System.Text.Json;
 using Microsoft.AspNetCore.Authentication;
 
-namespace Itenium.Forge.Security;
+namespace Itenium.Forge.Security.Keycloak;
 
 /// <summary>
 /// Transforms Keycloak JWT claims to standard .NET claims.

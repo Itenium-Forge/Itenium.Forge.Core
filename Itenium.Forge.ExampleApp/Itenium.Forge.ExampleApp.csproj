@@ -12,7 +12,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Itenium.Forge.Controllers\Itenium.Forge.Controllers.csproj" />
     <ProjectReference Include="..\Itenium.Forge.Logging\Itenium.Forge.Logging.csproj" />
-    <ProjectReference Include="..\Itenium.Forge.Security\Itenium.Forge.Security.csproj" />
+    <ProjectReference Include="..\Itenium.Forge.Security.Keycloak\Itenium.Forge.Security.Keycloak.csproj" />
     <ProjectReference Include="..\Itenium.Forge.Settings\Itenium.Forge.Settings.csproj" />
     <ProjectReference Include="..\Itenium.Forge.Swagger\Itenium.Forge.Swagger.csproj" />
   </ItemGroup>
