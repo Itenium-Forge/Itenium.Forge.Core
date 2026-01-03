@@ -159,12 +159,18 @@ public static class OpenIddictExtensions
         {
             if (!await roleManager.RoleExistsAsync(roleName))
             {
-                await roleManager.CreateAsync(new IdentityRole(roleName));
+                var role = new IdentityRole(roleName);
+                var result = await roleManager.CreateAsync(role);
+                if (!result.Succeeded)
+                {
+                    throw new InvalidOperationException($"Failed to create role '{roleName}': {string.Join(", ", result.Errors.Select(e => e.Description))}");
+                }
             }
         }
 
         // Create admin user
-        if (await userManager.FindByEmailAsync("admin@test.local") == null)
+        var existingAdmin = await userManager.FindByEmailAsync("admin@test.local");
+        if (existingAdmin == null)
         {
             var admin = new ForgeUser
             {
@@ -174,12 +180,16 @@ public static class OpenIddictExtensions
                 FirstName = "Admin",
                 LastName = "User"
             };
-            await userManager.CreateAsync(admin, "Admin123!");
-            await userManager.AddToRolesAsync(admin, new[] { "admin", "user" });
+            var createResult = await userManager.CreateAsync(admin, "AdminPassword123!");
+            if (createResult.Succeeded)
+            {
+                await userManager.AddToRolesAsync(admin, ["admin", "user"]);
+            }
         }
 
         // Create regular user
-        if (await userManager.FindByEmailAsync("user@test.local") == null)
+        var existingUser = await userManager.FindByEmailAsync("user@test.local");
+        if (existingUser == null)
         {
             var user = new ForgeUser
             {
@@ -189,8 +199,11 @@ public static class OpenIddictExtensions
                 FirstName = "Regular",
                 LastName = "User"
             };
-            await userManager.CreateAsync(user, "User123!");
-            await userManager.AddToRoleAsync(user, "user");
+            var createResult = await userManager.CreateAsync(user, "UserPassword123!");
+            if (createResult.Succeeded)
+            {
+                await userManager.AddToRoleAsync(user, "user");
+            }
         }
     }
 }
