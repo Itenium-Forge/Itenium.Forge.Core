@@ -129,6 +129,7 @@ public static class LoggingExtensions
         }
 
 
+        builder.Services.AddProblemDetails();
         builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 
 
