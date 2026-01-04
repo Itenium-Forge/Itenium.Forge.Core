@@ -3,6 +3,7 @@ using Itenium.Forge.Core;
 using Itenium.Forge.ExampleApp;
 using Itenium.Forge.ExampleApp.Data;
 using Itenium.Forge.ExampleApp.Security;
+using Itenium.Forge.HealthChecks;
 using Itenium.Forge.Logging;
 using Itenium.Forge.Security;
 using Itenium.Forge.Security.OpenIddict;
@@ -26,6 +27,7 @@ try
 
     builder.AddForgeControllers();
     builder.AddForgeSwagger(typeof(ForgeSettings));
+    builder.AddForgeHealthChecks();
 
     WebApplication app = builder.Build();
 
@@ -46,6 +48,8 @@ try
     {
         app.UseForgeSwagger();
     }
+
+    app.UseForgeHealthChecks();
 
     app.Run();
 }

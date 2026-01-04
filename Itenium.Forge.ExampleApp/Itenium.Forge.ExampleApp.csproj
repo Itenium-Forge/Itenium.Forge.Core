@@ -15,6 +15,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Itenium.Forge.Controllers\Itenium.Forge.Controllers.csproj" />
+    <ProjectReference Include="..\Itenium.Forge.HealthChecks\Itenium.Forge.HealthChecks.csproj" />
     <ProjectReference Include="..\Itenium.Forge.Logging\Itenium.Forge.Logging.csproj" />
     <ProjectReference Include="..\Itenium.Forge.Security.OpenIddict\Itenium.Forge.Security.OpenIddict.csproj" />
     <ProjectReference Include="..\Itenium.Forge.Settings\Itenium.Forge.Settings.csproj" />
