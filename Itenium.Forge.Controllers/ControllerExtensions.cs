@@ -26,6 +26,7 @@ public static class ControllerExtensions
 
         if (!string.IsNullOrWhiteSpace(hostSettings?.CorsOrigins))
         {
+            var securityEnabled = builder.Configuration.GetSection("ForgeConfiguration:Security").Exists();
             builder.Services.AddCors(options =>
             {
                 options.AddPolicy("CorsPolicy", corsBuilder =>
@@ -33,8 +34,12 @@ public static class ControllerExtensions
                     corsBuilder
                         .WithOrigins(hostSettings.CorsOrigins)
                         .AllowAnyHeader()
-                        .AllowAnyMethod()
-                        .AllowCredentials();
+                        .AllowAnyMethod();
+
+                    if (securityEnabled)
+                    {
+                        corsBuilder.AllowCredentials();
+                    }
                 });
             });
         }

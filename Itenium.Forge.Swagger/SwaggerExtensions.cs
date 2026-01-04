@@ -17,6 +17,7 @@ public static class SwaggerExtensions
     /// </param>
     public static void AddForgeSwagger(this WebApplicationBuilder builder, params Type[] typesFromOtherAssemblies)
     {
+        var securityEnabled = builder.Configuration.GetSection("ForgeConfiguration:Security").Exists();
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen(options =>
         {
@@ -29,23 +30,26 @@ public static class SwaggerExtensions
                 options.IncludeXmlComments(mlFilePath);
             }
 
-            options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+            if (securityEnabled)
             {
-                Name = "Authorization",
-                Description = "JWT Authorization header using the Bearer scheme. Enter token without 'Bearer ' prefix",
-                Type = SecuritySchemeType.Http,
-                Scheme = "bearer",
-                BearerFormat = "JWT",
-                In = ParameterLocation.Header,
-            });
-
-            options.AddSecurityRequirement(_ => new OpenApiSecurityRequirement
-            {
+                options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
                 {
-                    new OpenApiSecuritySchemeReference("Bearer"),
-                    []
-                }
-            });
+                    Name = "Authorization",
+                    Description = "JWT Authorization header using the Bearer scheme. Enter token without 'Bearer ' prefix",
+                    Type = SecuritySchemeType.Http,
+                    Scheme = "bearer",
+                    BearerFormat = "JWT",
+                    In = ParameterLocation.Header,
+                });
+
+                options.AddSecurityRequirement(_ => new OpenApiSecurityRequirement
+                {
+                    {
+                        new OpenApiSecuritySchemeReference("Bearer"),
+                        []
+                    }
+                });
+            }
         });
     }
 
