@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
@@ -16,6 +17,15 @@ public class ExampleAppFactory : WebApplicationFactory<Program>
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         builder.UseEnvironment("Testing");
+
+        // Disable Loki health check in tests
+        builder.ConfigureAppConfiguration((context, config) =>
+        {
+            config.AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                ["ForgeConfiguration:Logging:LokiUrl"] = ""
+            });
+        });
 
         builder.ConfigureServices(services =>
         {
