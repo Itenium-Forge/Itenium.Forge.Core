@@ -35,9 +35,4 @@
     <None Include="$(MSBuildThisFileDirectory)icon.png" Link="icon.png" Pack="true" Visible="false" PackagePath="" />
   </ItemGroup>
 
-  <!-- Code style analyzers -->
-  <ItemGroup>
-    <PackageReference Include="Itenium.CodeStyle" PrivateAssets="all" />
-  </ItemGroup>
-
 </Project>
