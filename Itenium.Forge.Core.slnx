@@ -2,7 +2,11 @@
   <Folder Name="/Solution Items/">
     <File Path=".editorconfig" />
     <File Path=".gitignore" />
+    <File Path="Directory.Build.props" />
+    <File Path="Directory.Build.targets" />
+    <File Path="Directory.Packages.props" />
     <File Path="LICENSE" />
+    <File Path="nuget.config" />
     <File Path="README.md" />
   </Folder>
   <Project Path="Itenium.Forge.Controllers/Itenium.Forge.Controllers.csproj" Id="8b40a1ef-4f1b-47cc-8c9c-253991ac3e46" />

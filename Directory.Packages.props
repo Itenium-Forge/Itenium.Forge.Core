@@ -43,4 +43,8 @@
     <PackageVersion Include="NUnit3TestAdapter" Version="6.0.1" />
   </ItemGroup>
 
+  <ItemGroup Label="Analyzers">
+    <PackageVersion Include="Itenium.CodeStyle" Version="1.0.1" />
+  </ItemGroup>
+
 </Project>
