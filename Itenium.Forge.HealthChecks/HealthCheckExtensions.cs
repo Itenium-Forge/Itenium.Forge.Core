@@ -8,14 +8,12 @@ namespace Itenium.Forge.HealthChecks;
 public static class HealthCheckExtensions
 {
     /// <summary>
-    /// Registers health check services with a basic "self" check.
-    /// Additional checks can be added by the application using the standard
-    /// <c>builder.Services.AddHealthChecks().Add*()</c> methods with tags "live" and/or "ready".
+    /// Registers health check services /health/live and /health/ready
     /// </summary>
-    /// <param name="builder">The WebApp builder</param>
     public static IHealthChecksBuilder AddForgeHealthChecks(this WebApplicationBuilder builder)
     {
-        return builder.Services.AddHealthChecks()
+        return builder.Services
+            .AddHealthChecks()
             .AddCheck("self", () => HealthCheckResult.Healthy(), tags: ["live", "ready"]);
     }
 
@@ -27,7 +25,6 @@ public static class HealthCheckExtensions
     /// </list>
     /// Both endpoints include ForgeSettings metadata in the response.
     /// </summary>
-    /// <param name="app">The WebApplication</param>
     public static void UseForgeHealthChecks(this WebApplication app)
     {
         app.MapHealthChecks("/health/live", new HealthCheckOptions

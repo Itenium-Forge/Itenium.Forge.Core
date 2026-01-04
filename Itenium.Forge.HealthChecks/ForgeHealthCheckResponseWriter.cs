@@ -8,9 +8,9 @@ using Microsoft.Extensions.Diagnostics.HealthChecks;
 namespace Itenium.Forge.HealthChecks;
 
 /// <summary>
-/// Custom health check response writer that includes ForgeSettings metadata.
+/// Custom health check response writer
 /// </summary>
-public static class ForgeHealthCheckResponseWriter
+internal static class ForgeHealthCheckResponseWriter
 {
     private static readonly JsonSerializerOptions JsonOptions = new()
     {
@@ -20,7 +20,7 @@ public static class ForgeHealthCheckResponseWriter
     };
 
     /// <summary>
-    /// Writes the health check response as JSON including ForgeSettings metadata.
+    /// Writes the health check response as JSON
     /// </summary>
     public static async Task WriteResponse(HttpContext context, HealthReport report)
     {
@@ -31,11 +31,7 @@ public static class ForgeHealthCheckResponseWriter
         var response = new HealthCheckResponse
         {
             Status = report.Status.ToString(),
-            Service = forgeSettings?.ServiceName,
-            Application = forgeSettings?.Application,
-            Environment = forgeSettings?.Environment,
-            Tenant = forgeSettings?.Tenant,
-            Team = forgeSettings?.TeamName,
+            Settings = forgeSettings,
             Checks = report.Entries.Select(e => new HealthCheckEntry
             {
                 Name = e.Key,
@@ -51,11 +47,7 @@ public static class ForgeHealthCheckResponseWriter
     private class HealthCheckResponse
     {
         public required string Status { get; init; }
-        public string? Service { get; init; }
-        public string? Application { get; init; }
-        public string? Environment { get; init; }
-        public string? Tenant { get; init; }
-        public string? Team { get; init; }
+        public ForgeSettings? Settings { get; init; }
         public List<HealthCheckEntry> Checks { get; init; } = [];
     }
 
