@@ -55,12 +55,6 @@ public static class ControllerExtensions
 
     public static void UseForgeControllers(this WebApplication app)
     {
-        var hostSettings = app.Services.GetService<HostingSettings>();
-        if (!string.IsNullOrWhiteSpace(hostSettings?.CorsOrigins))
-        {
-            app.UseCors("CorsPolicy");
-        }
-        
         app.MapControllers();
     }
 }

@@ -1,3 +1,4 @@
+using Itenium.Forge.Controllers;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -20,10 +21,17 @@ public static class SecurityExtensions
     }
 
     /// <summary>
-    /// Adds authentication, authorization, and user logging middleware to the pipeline.
+    /// Adds CORS, authentication, authorization, and user logging middleware to the pipeline.
+    /// CORS must be before authentication for preflight requests to work.
     /// </summary>
     public static void UseForgeSecurity(this WebApplication app)
     {
+        var hostSettings = app.Services.GetService<HostingSettings>();
+        if (!string.IsNullOrWhiteSpace(hostSettings?.CorsOrigins))
+        {
+            app.UseCors("CorsPolicy");
+        }
+
         app.UseAuthentication();
         app.UseAuthorization();
         app.UseMiddleware<UserLoggingMiddleware>();
