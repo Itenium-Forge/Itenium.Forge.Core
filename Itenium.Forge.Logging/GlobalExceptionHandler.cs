@@ -10,11 +10,16 @@ public class GlobalExceptionHandler : IExceptionHandler
 {
     private readonly ILogger<GlobalExceptionHandler> _logger;
     private readonly ForgeSettings _settings;
+    private readonly IProblemDetailsService _problemDetailsService;
 
-    public GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logger, ForgeSettings settings)
+    public GlobalExceptionHandler(
+        ILogger<GlobalExceptionHandler> logger,
+        ForgeSettings settings,
+        IProblemDetailsService problemDetailsService)
     {
         _logger = logger;
         _settings = settings;
+        _problemDetailsService = problemDetailsService;
     }
 
     public async ValueTask<bool> TryHandleAsync(
@@ -24,28 +29,22 @@ public class GlobalExceptionHandler : IExceptionHandler
     {
         _logger.LogError(exception, "Exception occurred: {ErrorMessage}", exception.Message);
 
-        ProblemDetails problemDetails;
-        if (_settings.Environment == "Development")
-        {
-            problemDetails = new ProblemDetails
-            {
-                Status = StatusCodes.Status500InternalServerError,
-                Title = "Server error",
-                Detail = exception.ToString()
-            };
-        }
-        else
-        {
-            problemDetails = new ProblemDetails
-            {
-                Status = StatusCodes.Status500InternalServerError,
-                Title = "Server error",
-                Detail = "CorrelationId: " // TODO: CorrelationId
-            };
-        }
-
         httpContext.Response.StatusCode = StatusCodes.Status500InternalServerError;
-        await httpContext.Response.WriteAsJsonAsync(problemDetails, cancellationToken);
-        return true;
+
+        var detail = _settings.Environment == "Development"
+            ? exception.ToString()
+            : null;
+
+        return await _problemDetailsService.TryWriteAsync(new ProblemDetailsContext
+        {
+            HttpContext = httpContext,
+            ProblemDetails =
+            {
+                Status = StatusCodes.Status500InternalServerError,
+                Title = "Server error",
+                Detail = detail
+            },
+            Exception = exception
+        });
     }
 }

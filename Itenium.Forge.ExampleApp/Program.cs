@@ -26,6 +26,7 @@ try
     builder.Services.AddScoped<IExampleAppUser, ExampleAppUser>();
 
     builder.AddForgeControllers();
+    builder.AddForgeProblemDetails();
     builder.AddForgeSwagger(typeof(ForgeSettings));
     builder.AddForgeHealthChecks();
 
@@ -40,6 +41,7 @@ try
     await app.SeedOpenIddictDataAsync();
     await app.SeedTestUsersAsync();
 
+    app.UseForgeProblemDetails();
     app.UseForgeLogging();
     app.UseForgeSecurity();
 
