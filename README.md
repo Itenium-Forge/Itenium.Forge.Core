@@ -107,14 +107,6 @@ builder.Services.Configure<ApiBehaviorOptions>(options =>
 ```
 
 
-### Health Checks
-
-```cs
-builder.Services.AddHealthChecks();
-app.MapHealthChecks("/health");
-```
-
-
 ### Others
 
 ```cs

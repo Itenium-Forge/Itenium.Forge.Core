@@ -84,6 +84,7 @@ public class HealthCheckTests
         var content = await response.Content.ReadAsStringAsync();
         var json = JsonSerializer.Deserialize<JsonElement>(content);
 
+        // Loki is disabled in Testing environment (appsettings.Testing.json)
         Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
         Assert.That(json.GetProperty("status").GetString(), Is.EqualTo("Healthy"));
     }
@@ -111,6 +112,19 @@ public class HealthCheckTests
 
         Assert.That(json.TryGetProperty("checks", out var checks), Is.True);
         Assert.That(checks.GetArrayLength(), Is.GreaterThan(0));
+    }
+
+    [Test]
+    [Ignore("Loki may not be available in all test environments")]
+    public async Task HealthReady_IncludesLokiCheck()
+    {
+        var response = await _client.GetAsync("/health/ready");
+        var content = await response.Content.ReadAsStringAsync();
+        var json = JsonSerializer.Deserialize<JsonElement>(content);
+
+        var checks = json.GetProperty("checks");
+        var lokiCheck = checks.EnumerateArray().FirstOrDefault(c => c.GetProperty("name").GetString() == "loki");
+        Assert.That(lokiCheck.ValueKind, Is.Not.EqualTo(JsonValueKind.Undefined), "Loki health check should be present");
     }
 
     [Test]

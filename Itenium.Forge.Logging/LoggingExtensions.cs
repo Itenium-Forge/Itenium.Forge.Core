@@ -2,6 +2,7 @@ using Itenium.Forge.Core;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
 using Serilog;
 using Serilog.Sinks.Grafana.Loki;
@@ -103,6 +104,20 @@ public static class LoggingExtensions
                 );
             }
         });
+
+        // Register Loki health check if Loki is configured
+        if (!string.IsNullOrWhiteSpace(loggingConfig?.LokiUrl))
+        {
+            builder.Services.AddHttpClient("LokiHealthCheck");
+            var lokiUrl = loggingConfig.LokiUrl;
+            builder.Services.AddHealthChecks()
+                .Add(new HealthCheckRegistration(
+                    "loki",
+                    sp => new LokiHealthCheck(sp.GetRequiredService<IHttpClientFactory>(), lokiUrl),
+                    HealthStatus.Degraded,
+                    ["ready"]
+                ));
+        }
 
         if (forgeSettings != null)
         {
