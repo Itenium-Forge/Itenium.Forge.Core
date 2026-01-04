@@ -3,9 +3,9 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Hosting;
 
 namespace Itenium.Forge.ExampleApp.Tests;
@@ -17,15 +17,6 @@ public class ExampleAppFactory : WebApplicationFactory<Program>
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         builder.UseEnvironment("Testing");
-
-        // Disable Loki health check in tests
-        builder.ConfigureAppConfiguration((context, config) =>
-        {
-            config.AddInMemoryCollection(new Dictionary<string, string?>
-            {
-                ["ForgeConfiguration:Logging:LokiUrl"] = ""
-            });
-        });
 
         builder.ConfigureServices(services =>
         {
@@ -40,6 +31,22 @@ public class ExampleAppFactory : WebApplicationFactory<Program>
                 options.UseSqlite(_connection);
                 options.UseOpenIddict();
             });
+
+            // Remove Loki health check for tests
+            RemoveHealthCheck(services, "loki");
+        });
+    }
+
+    private static void RemoveHealthCheck(IServiceCollection services, string name)
+    {
+        // Use PostConfigure to remove after all other configurations have run
+        services.PostConfigure<HealthCheckServiceOptions>(options =>
+        {
+            var registration = options.Registrations.FirstOrDefault(r => r.Name == name);
+            if (registration != null)
+            {
+                options.Registrations.Remove(registration);
+            }
         });
     }
 
