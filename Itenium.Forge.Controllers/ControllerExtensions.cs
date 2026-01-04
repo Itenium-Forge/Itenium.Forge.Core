@@ -33,9 +33,8 @@ public static class ControllerExtensions
                     corsBuilder
                         .WithOrigins(hostSettings.CorsOrigins)
                         .AllowAnyHeader()
-                        .AllowAnyMethod();
-                    // TODO: Once we implement Itenium.Forge.Security, this also needs to be enabled:
-                    // .AllowCredentials();
+                        .AllowAnyMethod()
+                        .AllowCredentials();
                 });
             });
         }
