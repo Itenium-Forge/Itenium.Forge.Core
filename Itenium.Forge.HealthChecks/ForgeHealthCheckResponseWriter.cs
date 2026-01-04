@@ -1,3 +1,4 @@
+using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Itenium.Forge.Core;
@@ -19,6 +20,19 @@ internal static class ForgeHealthCheckResponseWriter
         DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
     };
 
+    private static readonly Dictionary<string, string> ForgeVersions = GetForgeVersions();
+
+    private static Dictionary<string, string> GetForgeVersions()
+    {
+        return AppDomain.CurrentDomain.GetAssemblies()
+            .Where(a => a.GetName().Name?.StartsWith("Itenium.Forge") == true)
+            .OrderBy(a => a.GetName().Name)
+            .ToDictionary(
+                a => a.GetName().Name!,
+                a => a.GetName().Version?.ToString() ?? "unknown"
+            );
+    }
+
     /// <summary>
     /// Writes the health check response as JSON
     /// </summary>
@@ -32,6 +46,7 @@ internal static class ForgeHealthCheckResponseWriter
         {
             Status = report.Status.ToString(),
             Settings = forgeSettings,
+            Versions = ForgeVersions,
             Checks = report.Entries.Select(e => new HealthCheckEntry
             {
                 Name = e.Key,
@@ -48,6 +63,7 @@ internal static class ForgeHealthCheckResponseWriter
     {
         public required string Status { get; init; }
         public ForgeSettings? Settings { get; init; }
+        public Dictionary<string, string> Versions { get; init; } = [];
         public List<HealthCheckEntry> Checks { get; init; } = [];
     }
 

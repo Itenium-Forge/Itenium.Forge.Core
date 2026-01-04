@@ -61,6 +61,18 @@ public class HealthCheckTests
         Assert.That(checks.GetArrayLength(), Is.GreaterThan(0));
     }
 
+    [Test]
+    public async Task HealthLive_IncludesForgeVersions()
+    {
+        var response = await _client.GetAsync("/health/live");
+        var content = await response.Content.ReadAsStringAsync();
+        var json = JsonSerializer.Deserialize<JsonElement>(content);
+
+        var versions = json.GetProperty("versions");
+        Assert.That(versions.TryGetProperty("Itenium.Forge.Core", out _), Is.True);
+        Assert.That(versions.TryGetProperty("Itenium.Forge.HealthChecks", out _), Is.True);
+    }
+
     #endregion
 
     #region Readiness Endpoint
@@ -99,6 +111,18 @@ public class HealthCheckTests
 
         Assert.That(json.TryGetProperty("checks", out var checks), Is.True);
         Assert.That(checks.GetArrayLength(), Is.GreaterThan(0));
+    }
+
+    [Test]
+    public async Task HealthReady_IncludesForgeVersions()
+    {
+        var response = await _client.GetAsync("/health/ready");
+        var content = await response.Content.ReadAsStringAsync();
+        var json = JsonSerializer.Deserialize<JsonElement>(content);
+
+        var versions = json.GetProperty("versions");
+        Assert.That(versions.TryGetProperty("Itenium.Forge.Core", out _), Is.True);
+        Assert.That(versions.TryGetProperty("Itenium.Forge.HealthChecks", out _), Is.True);
     }
 
     #endregion
