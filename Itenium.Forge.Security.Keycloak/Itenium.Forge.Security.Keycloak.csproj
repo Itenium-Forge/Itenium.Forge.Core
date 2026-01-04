@@ -1,37 +1,14 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net10.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
-    <NoWarn>CS1591;IDE0290</NoWarn>
-    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    <GenerateDocumentationFile>true</GenerateDocumentationFile>
-  </PropertyGroup>
-
-  <PropertyGroup>
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageId>Itenium.Forge.Security.Keycloak</PackageId>
-    <Version>0.0.0</Version>
-    <Authors>Itenium</Authors>
-    <Company>Itenium</Company>
     <Description>Keycloak JWT authentication for Forge applications.</Description>
     <PackageTags>security keycloak jwt authentication</PackageTags>
-    <PackageProjectUrl>https://github.com/Itenium-Forge</PackageProjectUrl>
-    <RepositoryUrl>https://github.com/Itenium-Forge/Itenium.Forge.Core</RepositoryUrl>
-    <RepositoryType>git</RepositoryType>
-    <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageReadmeFile>README.md</PackageReadmeFile>
-    <PackageIconUrl>https://itenium.be/img/favicon.png</PackageIconUrl>
-    <PackageIcon>icon.png</PackageIcon>
-
-    <IncludeSymbols>true</IncludeSymbols>
-    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
   </PropertyGroup>
 
   <ItemGroup>
     <None Include=".\README.md" Pack="true" PackagePath="" />
-    <None Include="..\icon.png" Link="icon.png" Pack="true" Visible="false" PackagePath="" />
   </ItemGroup>
 
   <ItemGroup>
