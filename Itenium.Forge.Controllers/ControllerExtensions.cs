@@ -31,8 +31,9 @@ public static class ControllerExtensions
             {
                 options.AddPolicy("CorsPolicy", corsBuilder =>
                 {
+                    var origins = hostSettings.CorsOrigins.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
                     corsBuilder
-                        .WithOrigins(hostSettings.CorsOrigins)
+                        .WithOrigins(origins)
                         .AllowAnyHeader()
                         .AllowAnyMethod();
 
