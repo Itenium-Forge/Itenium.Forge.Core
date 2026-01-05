@@ -33,22 +33,17 @@ public static class SwaggerExtensions
 
             if (securityEnabled)
             {
-                options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+                options.AddSecurityDefinition("bearer", new OpenApiSecurityScheme
                 {
-                    Name = "Authorization",
-                    Description = "JWT Authorization header using the Bearer scheme. Enter token without 'Bearer ' prefix",
                     Type = SecuritySchemeType.Http,
                     Scheme = "bearer",
                     BearerFormat = "JWT",
-                    In = ParameterLocation.Header,
+                    Description = "JWT Authorization header using the Bearer scheme. Enter token without 'Bearer ' prefix",
                 });
 
-                options.AddSecurityRequirement(_ => new OpenApiSecurityRequirement
+                options.AddSecurityRequirement(document => new OpenApiSecurityRequirement
                 {
-                    {
-                        new OpenApiSecuritySchemeReference("Bearer"),
-                        []
-                    }
+                    [new OpenApiSecuritySchemeReference("bearer", document)] = []
                 });
             }
         });
