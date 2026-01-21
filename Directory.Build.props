@@ -25,7 +25,7 @@
     <RepositoryUrl>https://github.com/Itenium-Forge/Itenium.Forge.Core</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <PackageIconUrl>https://itenium.be/img/favicon.png</PackageIconUrl>
+    <PackageIconUrl>https://itenium-forge.github.io/favicon.png</PackageIconUrl>
     <PackageIcon>icon.png</PackageIcon>
     <IncludeSymbols>true</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
