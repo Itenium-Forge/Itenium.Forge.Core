@@ -3,4 +3,5 @@ bin
 obj
 logs
 *.DotSettings.user
-.claude/settings.local.json
+.claude/
+_bmad/
