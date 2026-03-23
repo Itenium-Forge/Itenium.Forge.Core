@@ -183,7 +183,6 @@ public class LoggingExtensionsTests
         Assert.That(enricherNames, Has.Some.EqualTo("ClientIpEnricher"));
         Assert.That(enricherNames, Has.Some.EqualTo("MachineNameEnricher"));
         Assert.That(enricherNames, Has.Some.EqualTo("ThreadIdEnricher"));
-        Assert.That(enricherNames, Has.Some.EqualTo("ClientHeaderEnricher")); // x-correlation-id header
     }
 
     [Test]

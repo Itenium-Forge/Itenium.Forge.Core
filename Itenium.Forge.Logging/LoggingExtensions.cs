@@ -62,8 +62,6 @@ public static class LoggingExtensions
             lc.Enrich.WithMachineName();
             lc.Enrich.WithThreadId();
 
-            lc.Enrich.WithRequestHeader("x-correlation-id", "CorrelationId");
-            // TODO: logging enrichment: CorrelationId // Activity.Current?.TraceId.ToString(); ?
             // TODO: logging enrichment: UserId/Name
 
             if (forgeSettings != null)
@@ -181,6 +179,7 @@ public static class LoggingExtensions
         // TODO: This should be in Forge.Telemetry
         // app.UseOpenTelemetryPrometheusScrapingEndpoint();
 
+        app.UseMiddleware<CorrelationIdMiddleware>();
         // Alternatively: app.UseSerilogRequestLogging();
         app.UseMiddleware<RequestLoggingMiddleware>();
     }

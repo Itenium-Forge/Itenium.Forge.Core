@@ -133,4 +133,32 @@ public class ProblemControllerTests
         Assert.That(problem.TryGetProperty("traceId", out var traceId), Is.True);
         Assert.That(traceId.GetString(), Is.Not.Empty);
     }
+
+    [Test]
+    public async Task ProblemDetails_TraceId_MatchesResponseHeader()
+    {
+        var response = await _client.GetAsync("/api/problem/bad-request");
+        var content = await response.Content.ReadAsStringAsync();
+        var problem = JsonSerializer.Deserialize<JsonElement>(content);
+
+        var headerCorrelationId = response.Headers.GetValues("x-correlation-id").Single();
+        var bodyCorrelationId = problem.GetProperty("traceId").GetString();
+
+        Assert.That(bodyCorrelationId, Is.EqualTo(headerCorrelationId));
+    }
+
+    [Test]
+    public async Task ProblemDetails_TraceId_ReflectsRequestHeader()
+    {
+        var sentId = "problem-trace-xyz";
+        var request = new HttpRequestMessage(HttpMethod.Get, "/api/problem/bad-request");
+        request.Headers.Add("x-correlation-id", sentId);
+
+        var response = await _client.SendAsync(request);
+        var content = await response.Content.ReadAsStringAsync();
+        var problem = JsonSerializer.Deserialize<JsonElement>(content);
+
+        var bodyCorrelationId = problem.GetProperty("traceId").GetString();
+        Assert.That(bodyCorrelationId, Is.EqualTo(sentId));
+    }
 }
