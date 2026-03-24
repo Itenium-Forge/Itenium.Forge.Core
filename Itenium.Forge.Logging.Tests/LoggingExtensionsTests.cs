@@ -11,6 +11,19 @@ namespace Itenium.Forge.Logging.Tests;
 public class LoggingExtensionsTests
 {
     [Test]
+    public void AddForgeLogging_RegistersTraceparentHandler()
+    {
+        var builder = WebApplication.CreateBuilder();
+        builder.AddForgeSettings<AppSettings>();
+        builder.AddForgeLogging();
+
+        var handler = builder.Services
+            .SingleOrDefault(sd => sd.ServiceType == typeof(TraceparentHandler));
+
+        Assert.That(handler, Is.Not.Null);
+    }
+
+    [Test]
     public void AddForgeLogging_RegistersGlobalExceptionHandler()
     {
         var builder = WebApplication.CreateBuilder();
@@ -183,6 +196,7 @@ public class LoggingExtensionsTests
         Assert.That(enricherNames, Has.Some.EqualTo("ClientIpEnricher"));
         Assert.That(enricherNames, Has.Some.EqualTo("MachineNameEnricher"));
         Assert.That(enricherNames, Has.Some.EqualTo("ThreadIdEnricher"));
+        Assert.That(enricherNames, Has.Some.EqualTo("ActivityEnricher"));
     }
 
     [Test]

@@ -6,6 +6,7 @@ using Itenium.Forge.ExampleApp.Security;
 using Itenium.Forge.HealthChecks;
 using Itenium.Forge.Logging;
 using Itenium.Forge.Security;
+using Itenium.Forge.Telemetry;
 using Itenium.Forge.Security.OpenIddict;
 using Itenium.Forge.Settings;
 using Itenium.Forge.Swagger;
@@ -19,6 +20,7 @@ try
     var builder = WebApplication.CreateBuilder(args);
     var settings = builder.AddForgeSettings<ExampleSettings>();
     builder.AddForgeLogging();
+    builder.AddForgeTelemetry();
 
     var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
     builder.AddForgeOpenIddict<AppDbContext>(options => options.UseSqlite(connectionString));
@@ -43,6 +45,7 @@ try
 
     app.UseForgeProblemDetails();
     app.UseForgeLogging();
+    app.UseForgeTelemetry();
     app.UseForgeSecurity();
 
     app.UseForgeControllers();

@@ -32,8 +32,9 @@ public class ExampleAppFactory : WebApplicationFactory<Program>
                 options.UseOpenIddict();
             });
 
-            // Remove Loki health check for tests
+            // Remove external health checks — these endpoints aren't available in tests
             RemoveHealthCheck(services, "loki");
+            RemoveHealthCheck(services, "otlp");
         });
     }
 

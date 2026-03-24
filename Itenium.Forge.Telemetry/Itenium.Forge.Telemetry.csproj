@@ -1,0 +1,42 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <PackageId>Itenium.Forge.Telemetry</PackageId>
+    <Description>Configures OpenTelemetry tracing and metrics (OTLP + Prometheus).</Description>
+    <PackageTags>opentelemetry tracing metrics observability</PackageTags>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <!--
+      OpenTelemetry.Exporter.Prometheus.AspNetCore has never shipped a stable NuGet release.
+      Accepting this prerelease dependency here keeps the stable Itenium.Forge.Logging package
+      free of any prerelease transitive chain.
+    -->
+    <NoWarn>$(NoWarn);NU5104</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include=".\README.md" Pack="true" PackagePath="" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="OpenTelemetry.Api" />
+    <PackageReference Include="OpenTelemetry.Extensions.Hosting" />
+    <PackageReference Include="OpenTelemetry.Instrumentation.AspNetCore" />
+    <PackageReference Include="OpenTelemetry.Instrumentation.Http" />
+    <PackageReference Include="OpenTelemetry.Instrumentation.Runtime" />
+    <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" />
+    <PackageReference Include="OpenTelemetry.Exporter.Prometheus.AspNetCore" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Itenium.Forge.Core\Itenium.Forge.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Itenium.Forge.Telemetry.Tests" />
+  </ItemGroup>
+
+</Project>
