@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Http;
 using Serilog;
 using Serilog.Core;
 using Serilog.Events;
+using System.Diagnostics;
 
 namespace Itenium.Forge.Logging.Tests;
 
@@ -11,8 +12,29 @@ public class CorrelationIdMiddlewareTests
     // ---------- TraceIdentifier ----------
 
     [Test]
-    public async Task Invoke_WithoutHeader_SetsTraceIdentifierToGeneratedGuid()
+    public async Task Invoke_WithActiveActivity_SetsTraceIdentifierFromActivity()
     {
+        var activity = new Activity("test").Start();
+        try
+        {
+            var context = new DefaultHttpContext();
+            var middleware = new CorrelationIdMiddleware(_ => Task.CompletedTask);
+
+            await middleware.Invoke(context);
+
+            Assert.That(context.TraceIdentifier, Is.EqualTo(activity.TraceId.ToString()));
+        }
+        finally
+        {
+            activity.Stop();
+        }
+    }
+
+    [Test]
+    public async Task Invoke_WithoutActivity_FallsBackToGeneratedGuid()
+    {
+        Assert.That(Activity.Current, Is.Null, "Precondition: no active activity");
+
         var context = new DefaultHttpContext();
         var middleware = new CorrelationIdMiddleware(_ => Task.CompletedTask);
 
@@ -21,47 +43,42 @@ public class CorrelationIdMiddlewareTests
         Assert.That(Guid.TryParse(context.TraceIdentifier, out _), Is.True);
     }
 
-    [Test]
-    public async Task Invoke_WithHeader_SetsTraceIdentifierToProvidedValue()
-    {
-        var context = new DefaultHttpContext();
-        context.Request.Headers[CorrelationIdMiddleware.HeaderName] = "my-correlation-id";
-        var middleware = new CorrelationIdMiddleware(_ => Task.CompletedTask);
-
-        await middleware.Invoke(context);
-
-        Assert.That(context.TraceIdentifier, Is.EqualTo("my-correlation-id"));
-    }
-
     // ---------- Serilog LogContext ----------
 
     [Test]
-    public async Task Invoke_PushesCorrelationIdToLogContext_DuringNextExecution()
+    public async Task Invoke_PushesTraceIdToLogContext_DuringNextExecution()
     {
-        var sink = new CaptureSink();
-        var logger = new LoggerConfiguration()
-            .Enrich.FromLogContext()
-            .WriteTo.Sink(sink)
-            .CreateLogger();
-
-        var context = new DefaultHttpContext();
-        context.Request.Headers[CorrelationIdMiddleware.HeaderName] = "trace-abc";
-        var middleware = new CorrelationIdMiddleware(_ =>
+        var activity = new Activity("test").Start();
+        try
         {
-            logger.Information("test event");
-            return Task.CompletedTask;
-        });
+            var sink = new CaptureSink();
+            var logger = new LoggerConfiguration()
+                .Enrich.FromLogContext()
+                .WriteTo.Sink(sink)
+                .CreateLogger();
 
-        await middleware.Invoke(context);
+            var context = new DefaultHttpContext();
+            var middleware = new CorrelationIdMiddleware(_ =>
+            {
+                logger.Information("test event");
+                return Task.CompletedTask;
+            });
 
-        var logEvent = sink.Events.Single();
-        Assert.That(logEvent.Properties.ContainsKey("CorrelationId"), Is.True);
-        var value = logEvent.Properties["CorrelationId"] as ScalarValue;
-        Assert.That(value?.Value?.ToString(), Is.EqualTo("trace-abc"));
+            await middleware.Invoke(context);
+
+            var logEvent = sink.Events.Single();
+            Assert.That(logEvent.Properties.ContainsKey("TraceId"), Is.True);
+            var value = logEvent.Properties["TraceId"] as ScalarValue;
+            Assert.That(value?.Value?.ToString(), Is.EqualTo(activity.TraceId.ToString()));
+        }
+        finally
+        {
+            activity.Stop();
+        }
     }
 
     [Test]
-    public async Task Invoke_CorrelationIdNotInLogContext_AfterRequestCompletes()
+    public async Task Invoke_TraceIdNotInLogContext_AfterRequestCompletes()
     {
         var sink = new CaptureSink();
         var logger = new LoggerConfiguration()
@@ -77,7 +94,7 @@ public class CorrelationIdMiddlewareTests
         logger.Information("after request");
 
         var logEvent = sink.Events.Single();
-        Assert.That(logEvent.Properties.ContainsKey("CorrelationId"), Is.False);
+        Assert.That(logEvent.Properties.ContainsKey("TraceId"), Is.False);
     }
 
     // ---------- Pipeline ----------

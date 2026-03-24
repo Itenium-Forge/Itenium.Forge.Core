@@ -135,30 +135,34 @@ public class ProblemControllerTests
     }
 
     [Test]
-    public async Task ProblemDetails_TraceId_MatchesResponseHeader()
+    public async Task ProblemDetails_TraceId_IsOtelFormat()
     {
+        // OTel generates a 128-bit trace ID represented as 32 lowercase hex characters.
+        // The middleware falls back to a GUID (32 hex, no dashes) when no Activity exists.
+        // Either way the value must be a 32-char hex string.
         var response = await _client.GetAsync("/api/problem/bad-request");
         var content = await response.Content.ReadAsStringAsync();
         var problem = JsonSerializer.Deserialize<JsonElement>(content);
 
-        var headerCorrelationId = response.Headers.GetValues("x-correlation-id").Single();
-        var bodyCorrelationId = problem.GetProperty("traceId").GetString();
-
-        Assert.That(bodyCorrelationId, Is.EqualTo(headerCorrelationId));
+        var traceId = problem.GetProperty("traceId").GetString();
+        Assert.That(traceId, Has.Length.EqualTo(32));
+        Assert.That(traceId, Does.Match("^[0-9a-f]{32}$"));
     }
 
     [Test]
-    public async Task ProblemDetails_TraceId_ReflectsRequestHeader()
+    public async Task ProblemDetails_TraceId_PropagatedFromTraceparentHeader()
     {
-        var sentId = "problem-trace-xyz";
+        // Send a W3C traceparent header — the OTel SDK will use its traceId segment
+        // and the middleware will forward that to HttpContext.TraceIdentifier → ProblemDetails.
+        const string traceId = "4bf92f3577b34da6a3ce929d0e0e4736";
         var request = new HttpRequestMessage(HttpMethod.Get, "/api/problem/bad-request");
-        request.Headers.Add("x-correlation-id", sentId);
+        request.Headers.Add("traceparent", $"00-{traceId}-00f067aa0ba902b7-01");
 
         var response = await _client.SendAsync(request);
         var content = await response.Content.ReadAsStringAsync();
         var problem = JsonSerializer.Deserialize<JsonElement>(content);
 
-        var bodyCorrelationId = problem.GetProperty("traceId").GetString();
-        Assert.That(bodyCorrelationId, Is.EqualTo(sentId));
+        var bodyTraceId = problem.GetProperty("traceId").GetString();
+        Assert.That(bodyTraceId, Is.EqualTo(traceId));
     }
 }

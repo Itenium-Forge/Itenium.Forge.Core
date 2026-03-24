@@ -1,18 +1,24 @@
 using Microsoft.AspNetCore.Http;
 using Serilog.Context;
+using System.Diagnostics;
 
 namespace Itenium.Forge.Logging;
 
 /// <summary>
-/// Ensures every request has a correlation ID.
-/// Reads <c>x-correlation-id</c> from the incoming request header, or generates a new GUID when absent.
-/// Echoes the value back on the response header so callers can trace their requests.
-/// Pushes the value into Serilog's <see cref="LogContext"/> so it appears on every log entry for the request.
-/// Also sets <see cref="HttpContext.TraceIdentifier"/> to keep the value consistent across the pipeline.
+/// Extracts the W3C trace ID from the active <see cref="Activity"/> (populated from the
+/// incoming <c>traceparent</c> header by the OpenTelemetry ASP.NET Core instrumentation)
+/// and makes it available throughout the request pipeline.
+///
+/// Sets <see cref="HttpContext.TraceIdentifier"/> so ProblemDetails picks it up automatically,
+/// and pushes <c>TraceId</c> into Serilog's <see cref="LogContext"/> so every log entry
+/// for the request carries the trace ID — correlating logs with traces in Grafana Tempo.
+///
+/// Falls back to a generated GUID when no active trace exists (e.g. in tests without OTel).
 /// </summary>
 public class CorrelationIdMiddleware
 {
-    public const string HeaderName = "x-correlation-id";
+    /// <summary>W3C TraceContext header name used for distributed trace propagation.</summary>
+    public const string HeaderName = "traceparent";
 
     private readonly RequestDelegate _next;
 
@@ -23,18 +29,12 @@ public class CorrelationIdMiddleware
 
     public async Task Invoke(HttpContext context)
     {
-        var correlationId = context.Request.Headers[HeaderName].FirstOrDefault()
-                            ?? Guid.NewGuid().ToString();
+        var traceId = Activity.Current?.TraceId.ToString()
+                      ?? Guid.NewGuid().ToString();
 
-        context.TraceIdentifier = correlationId;
+        context.TraceIdentifier = traceId;
 
-        context.Response.OnStarting(() =>
-        {
-            context.Response.Headers[HeaderName] = correlationId;
-            return Task.CompletedTask;
-        });
-
-        using (LogContext.PushProperty("CorrelationId", correlationId))
+        using (LogContext.PushProperty("TraceId", traceId))
         {
             await _next(context);
         }

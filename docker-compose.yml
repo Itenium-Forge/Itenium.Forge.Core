@@ -1,0 +1,15 @@
+services:
+  lgtm:
+    image: grafana/otel-lgtm:latest
+    container_name: forge-observability
+    ports:
+      - "3000:3000"   # Grafana UI         → http://localhost:3000
+      - "4317:4317"   # OTLP gRPC          → traces + metrics from the app
+      - "4318:4318"   # OTLP HTTP          → alternative OTLP transport
+      - "9090:9090"   # Prometheus         → http://localhost:9090
+    volumes:
+      - ./docker/grafana/provisioning:/etc/grafana/provisioning
+    environment:
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
+      - GF_AUTH_DISABLE_LOGIN_FORM=true

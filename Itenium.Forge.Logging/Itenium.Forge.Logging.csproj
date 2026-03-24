@@ -34,4 +34,8 @@
     <ProjectReference Include="..\Itenium.Forge.Core\Itenium.Forge.Core.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="Itenium.Forge.Logging.Tests" />
+  </ItemGroup>
+
 </Project>

@@ -1,7 +1,13 @@
 using System.Net;
+using System.Text.Json;
 
 namespace Itenium.Forge.ExampleApp.Tests;
 
+/// <summary>
+/// Verifies the full traceparent → TraceIdentifier → ProblemDetails chain.
+/// OTel ASP.NET Core instrumentation creates an Activity per request, which
+/// CorrelationIdMiddleware reads to set HttpContext.TraceIdentifier.
+/// </summary>
 [TestFixture]
 public class CorrelationIdMiddlewareTests
 {
@@ -23,40 +29,39 @@ public class CorrelationIdMiddlewareTests
     }
 
     [Test]
-    public async Task Request_WithoutCorrelationId_ResponseContainsGeneratedHeader()
+    public async Task Request_TraceId_AppearsInProblemDetails()
     {
-        var response = await _client.GetAsync("/health/live");
+        var response = await _client.GetAsync("/api/problem/bad-request");
+        var content = await response.Content.ReadAsStringAsync();
+        var problem = JsonSerializer.Deserialize<JsonElement>(content);
 
-        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
-        Assert.That(response.Headers.Contains("x-correlation-id"), Is.True);
-
-        var correlationId = response.Headers.GetValues("x-correlation-id").Single();
-        Assert.That(Guid.TryParse(correlationId, out _), Is.True, "Generated correlation ID should be a valid GUID");
+        Assert.That(problem.TryGetProperty("traceId", out var traceId), Is.True);
+        Assert.That(traceId.GetString(), Is.Not.Empty);
     }
 
     [Test]
-    public async Task Request_WithCorrelationId_ResponseEchoesSameHeader()
+    public async Task Request_TraceId_IsOtelFormat()
     {
-        var sentId = "my-trace-abc-123";
-        var request = new HttpRequestMessage(HttpMethod.Get, "/health/live");
-        request.Headers.Add("x-correlation-id", sentId);
+        // OTel trace IDs are 32 lowercase hex characters (128-bit), not a GUID
+        var response = await _client.GetAsync("/api/problem/bad-request");
+        var content = await response.Content.ReadAsStringAsync();
+        var problem = JsonSerializer.Deserialize<JsonElement>(content);
 
-        var response = await _client.SendAsync(request);
-
-        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
-
-        var returnedId = response.Headers.GetValues("x-correlation-id").Single();
-        Assert.That(returnedId, Is.EqualTo(sentId));
+        var traceId = problem.GetProperty("traceId").GetString()!;
+        Assert.That(traceId, Has.Length.EqualTo(32));
+        Assert.That(traceId, Does.Match("^[0-9a-f]{32}$"), "Expected 32 lowercase hex chars");
     }
 
     [Test]
-    public async Task Requests_WithoutCorrelationId_EachGetUniqueId()
+    public async Task Requests_EachGetUniqueTraceId()
     {
-        var response1 = await _client.GetAsync("/health/live");
-        var response2 = await _client.GetAsync("/health/live");
+        var response1 = await _client.GetAsync("/api/problem/bad-request");
+        var response2 = await _client.GetAsync("/api/problem/bad-request");
 
-        var id1 = response1.Headers.GetValues("x-correlation-id").Single();
-        var id2 = response2.Headers.GetValues("x-correlation-id").Single();
+        var id1 = JsonSerializer.Deserialize<JsonElement>(await response1.Content.ReadAsStringAsync())
+            .GetProperty("traceId").GetString();
+        var id2 = JsonSerializer.Deserialize<JsonElement>(await response2.Content.ReadAsStringAsync())
+            .GetProperty("traceId").GetString();
 
         Assert.That(id1, Is.Not.EqualTo(id2));
     }
