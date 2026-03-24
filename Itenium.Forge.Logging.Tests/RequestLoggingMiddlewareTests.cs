@@ -1,5 +1,5 @@
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Logging;
 
 namespace Itenium.Forge.Logging.Tests;
 
@@ -7,14 +7,13 @@ namespace Itenium.Forge.Logging.Tests;
 public class RequestLoggingMiddlewareTests
 {
     // ---------- skip conditions ----------
+    // Non-API paths and OPTIONS requests skip logging but still call next.
 
     [Test]
-    public async Task Invoke_NonApiPath_SkipsLoggingAndCallsNext()
+    public async Task Invoke_NonApiPath_SkipsLogging()
     {
-        var nextCalled = false;
-        var middleware = new RequestLoggingMiddleware(
-            _ => { nextCalled = true; return Task.CompletedTask; },
-            NullLogger<RequestLoggingMiddleware>.Instance);
+        var logger = new FakeLogger();
+        var middleware = new RequestLoggingMiddleware(_ => Task.CompletedTask, logger);
 
         var context = new DefaultHttpContext();
         context.Request.Path = "/health/live";
@@ -22,16 +21,14 @@ public class RequestLoggingMiddlewareTests
 
         await middleware.Invoke(context);
 
-        Assert.That(nextCalled, Is.True);
+        Assert.That(logger.Messages, Is.Empty);
     }
 
     [Test]
-    public async Task Invoke_OptionsMethod_SkipsLoggingAndCallsNext()
+    public async Task Invoke_OptionsMethod_SkipsLogging()
     {
-        var nextCalled = false;
-        var middleware = new RequestLoggingMiddleware(
-            _ => { nextCalled = true; return Task.CompletedTask; },
-            NullLogger<RequestLoggingMiddleware>.Instance);
+        var logger = new FakeLogger();
+        var middleware = new RequestLoggingMiddleware(_ => Task.CompletedTask, logger);
 
         var context = new DefaultHttpContext();
         context.Request.Path = "/api/resource";
@@ -39,18 +36,17 @@ public class RequestLoggingMiddlewareTests
 
         await middleware.Invoke(context);
 
-        Assert.That(nextCalled, Is.True);
+        Assert.That(logger.Messages, Is.Empty);
     }
 
     // ---------- api path logging ----------
+    // API requests produce exactly two log entries: one before and one after the call to next.
 
     [Test]
-    public async Task Invoke_ApiGetWithNoQuery_CallsNext()
+    public async Task Invoke_ApiGetWithNoQuery_LogsRequestAndResponse()
     {
-        var nextCalled = false;
-        var middleware = new RequestLoggingMiddleware(
-            _ => { nextCalled = true; return Task.CompletedTask; },
-            NullLogger<RequestLoggingMiddleware>.Instance);
+        var logger = new FakeLogger();
+        var middleware = new RequestLoggingMiddleware(_ => Task.CompletedTask, logger);
 
         var context = new DefaultHttpContext();
         context.Request.Path = "/api/items";
@@ -58,16 +54,14 @@ public class RequestLoggingMiddlewareTests
 
         await middleware.Invoke(context);
 
-        Assert.That(nextCalled, Is.True);
+        Assert.That(logger.Messages, Has.Count.EqualTo(2));
     }
 
     [Test]
-    public async Task Invoke_ApiGetWithQueryString_CallsNext()
+    public async Task Invoke_ApiGetWithQueryString_LogsQueryInRequest()
     {
-        var nextCalled = false;
-        var middleware = new RequestLoggingMiddleware(
-            _ => { nextCalled = true; return Task.CompletedTask; },
-            NullLogger<RequestLoggingMiddleware>.Instance);
+        var logger = new FakeLogger();
+        var middleware = new RequestLoggingMiddleware(_ => Task.CompletedTask, logger);
 
         var context = new DefaultHttpContext();
         context.Request.Path = "/api/items";
@@ -76,16 +70,14 @@ public class RequestLoggingMiddlewareTests
 
         await middleware.Invoke(context);
 
-        Assert.That(nextCalled, Is.True);
+        Assert.That(logger.Messages[0], Does.Contain("page"));
     }
 
     [Test]
-    public async Task Invoke_ApiPostWithBody_CallsNext()
+    public async Task Invoke_ApiPostWithBody_LogsBodyInRequest()
     {
-        var nextCalled = false;
-        var middleware = new RequestLoggingMiddleware(
-            _ => { nextCalled = true; return Task.CompletedTask; },
-            NullLogger<RequestLoggingMiddleware>.Instance);
+        var logger = new FakeLogger();
+        var middleware = new RequestLoggingMiddleware(_ => Task.CompletedTask, logger);
 
         var context = new DefaultHttpContext();
         context.Request.Path = "/api/items";
@@ -95,16 +87,14 @@ public class RequestLoggingMiddlewareTests
 
         await middleware.Invoke(context);
 
-        Assert.That(nextCalled, Is.True);
+        Assert.That(logger.Messages[0], Does.Contain("test"));
     }
 
     [Test]
-    public async Task Invoke_ApiPostWithBodyAndQuery_CallsNext()
+    public async Task Invoke_ApiPostWithBodyAndQuery_LogsBothInRequest()
     {
-        var nextCalled = false;
-        var middleware = new RequestLoggingMiddleware(
-            _ => { nextCalled = true; return Task.CompletedTask; },
-            NullLogger<RequestLoggingMiddleware>.Instance);
+        var logger = new FakeLogger();
+        var middleware = new RequestLoggingMiddleware(_ => Task.CompletedTask, logger);
 
         var context = new DefaultHttpContext();
         context.Request.Path = "/api/items";
@@ -115,16 +105,14 @@ public class RequestLoggingMiddlewareTests
 
         await middleware.Invoke(context);
 
-        Assert.That(nextCalled, Is.True);
+        Assert.That(logger.Messages[0], Does.Contain("draft").And.Contain("test"));
     }
 
     [Test]
-    public async Task Invoke_ApiDelete_CallsNext()
+    public async Task Invoke_ApiDelete_LogsRequestAndResponse()
     {
-        var nextCalled = false;
-        var middleware = new RequestLoggingMiddleware(
-            _ => { nextCalled = true; return Task.CompletedTask; },
-            NullLogger<RequestLoggingMiddleware>.Instance);
+        var logger = new FakeLogger();
+        var middleware = new RequestLoggingMiddleware(_ => Task.CompletedTask, logger);
 
         var context = new DefaultHttpContext();
         context.Request.Path = "/api/items/1";
@@ -132,6 +120,20 @@ public class RequestLoggingMiddlewareTests
 
         await middleware.Invoke(context);
 
-        Assert.That(nextCalled, Is.True);
+        Assert.That(logger.Messages, Has.Count.EqualTo(2));
+    }
+
+    // ---------- helpers ----------
+
+    private sealed class FakeLogger : ILogger<RequestLoggingMiddleware>
+    {
+        public List<string> Messages { get; } = [];
+
+        public IDisposable? BeginScope<TState>(TState state) where TState : notnull => null;
+        public bool IsEnabled(LogLevel logLevel) => true;
+
+        public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception,
+            Func<TState, Exception?, string> formatter)
+            => Messages.Add(formatter(state, exception));
     }
 }

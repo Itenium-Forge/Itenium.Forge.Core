@@ -150,6 +150,20 @@ public class ProblemControllerTests
     }
 
     [Test]
+    public async Task ProblemDetails_TraceId_IsUniquePerRequest()
+    {
+        var response1 = await _client.GetAsync("/api/problem/bad-request");
+        var response2 = await _client.GetAsync("/api/problem/bad-request");
+
+        var id1 = JsonSerializer.Deserialize<JsonElement>(await response1.Content.ReadAsStringAsync())
+            .GetProperty("traceId").GetString();
+        var id2 = JsonSerializer.Deserialize<JsonElement>(await response2.Content.ReadAsStringAsync())
+            .GetProperty("traceId").GetString();
+
+        Assert.That(id1, Is.Not.EqualTo(id2));
+    }
+
+    [Test]
     public async Task ProblemDetails_TraceId_PropagatedFromTraceparentHeader()
     {
         // Send a W3C traceparent header — the OTel SDK will use its traceId segment

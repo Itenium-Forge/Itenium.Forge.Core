@@ -23,7 +23,10 @@ Use `System.Diagnostics.Activity` (built into .NET — no NuGet package required
 ### Consequences
 
 - `Itenium.Forge.Logging` has **zero OTel package dependencies**.
-- Log enrichment with `TraceId`/`SpanId` works even when `Itenium.Forge.Telemetry` is not installed (falls back gracefully when `Activity.Current` is null).
+- `CorrelationIdMiddleware` starts its own fallback `Activity` per request when `Activity.Current` is null (i.e. when `Itenium.Forge.Telemetry` is not installed). It reads the incoming `traceparent` header to continue an existing trace, or generates a fresh W3C trace ID when absent.
+- Log enrichment with `TraceId`/`SpanId` works in both scenarios — with or without `Itenium.Forge.Telemetry`.
+- Outgoing `HttpClient` calls (via `IHttpClientFactory`) forward the `traceparent` header through `TraceparentHandler`, which is registered automatically by `AddForgeLogging()`. When `Itenium.Forge.Telemetry` is installed, the OTel SDK overwrites this header with a correctly-scoped child span; when it is absent, `TraceparentHandler` alone provides the propagation.
+- `HttpClient` instances created manually with `new HttpClient()` do **not** get `TraceparentHandler` — only factory-managed clients.
 - No extra NuGet weight for teams that use Serilog without OTel.
 
 ---

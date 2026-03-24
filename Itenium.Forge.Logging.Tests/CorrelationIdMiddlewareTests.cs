@@ -31,7 +31,7 @@ public class CorrelationIdMiddlewareTests
     }
 
     [Test]
-    public async Task Invoke_WithoutActivity_FallsBackToGeneratedGuid()
+    public async Task Invoke_WithoutActivity_GeneratesFreshW3CTraceId()
     {
         Assert.That(Activity.Current, Is.Null, "Precondition: no active activity");
 
@@ -40,7 +40,37 @@ public class CorrelationIdMiddlewareTests
 
         await middleware.Invoke(context);
 
-        Assert.That(Guid.TryParse(context.TraceIdentifier, out _), Is.True);
+        // W3C trace IDs are 32 lowercase hex characters, not a dashed GUID
+        Assert.That(context.TraceIdentifier, Has.Length.EqualTo(32));
+        Assert.That(context.TraceIdentifier, Does.Match("^[0-9a-f]{32}$"));
+    }
+
+    [Test]
+    public async Task Invoke_WithoutActivity_WithTraceparentHeader_ContinuesExistingTrace()
+    {
+        Assert.That(Activity.Current, Is.Null, "Precondition: no active activity");
+
+        const string incomingTraceId = "4bf92f3577b34da6a3ce929d0e0e4736";
+        var context = new DefaultHttpContext();
+        context.Request.Headers["traceparent"] = $"00-{incomingTraceId}-00f067aa0ba902b7-01";
+        var middleware = new CorrelationIdMiddleware(_ => Task.CompletedTask);
+
+        await middleware.Invoke(context);
+
+        Assert.That(context.TraceIdentifier, Is.EqualTo(incomingTraceId));
+    }
+
+    [Test]
+    public async Task Invoke_FallbackActivity_CleanedUpAfterRequest()
+    {
+        Assert.That(Activity.Current, Is.Null, "Precondition: no active activity");
+
+        var context = new DefaultHttpContext();
+        var middleware = new CorrelationIdMiddleware(_ => Task.CompletedTask);
+
+        await middleware.Invoke(context);
+
+        Assert.That(Activity.Current, Is.Null, "Fallback activity must not leak beyond the request");
     }
 
     // ---------- Serilog LogContext ----------

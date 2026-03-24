@@ -35,33 +35,15 @@ finally
 }
 ```
 
-## OpenTelemetry
+## Trace correlation
 
-Tracing is always active (so `Activity.Current` is populated per request and the W3C `traceparent` header is propagated). OTLP export and Prometheus metrics are opt-in via configuration.
+Every Serilog log entry is enriched with `TraceId` and `SpanId` from `Activity.Current`, allowing you to correlate logs with traces in Grafana Tempo.
 
-```json
-{
-  "ForgeConfiguration": {
-    "Observability": {
-      "OtlpEndpoint": "http://localhost:4317",
-      "MetricsEnabled": true
-    }
-  }
-}
-```
+`CorrelationIdMiddleware` ensures a W3C trace ID is available for every request. It reads the incoming `traceparent` header when present (continuing an existing distributed trace) or generates a fresh one when absent. The trace ID is also written to `HttpContext.TraceIdentifier`, so it appears in ProblemDetails responses automatically.
 
-| Key | Default | Description |
-|-----|---------|-------------|
-| `OtlpEndpoint` | `""` | OTLP gRPC endpoint. Leave empty to disable export. |
-| `MetricsEnabled` | `true` | Exposes `/metrics` for Prometheus scraping. |
+Outgoing `HttpClient` calls (resolved from `IHttpClientFactory`) automatically forward the `traceparent` header to downstream services.
 
-When `OtlpEndpoint` is set, a health check named `otlp` is automatically registered (tagged `ready`).
-
-The `traceparent` response header and trace context propagation to downstream `HttpClient` calls are handled automatically by the OTel SDK.
-
-Every Serilog log entry is enriched with `TraceId` and `SpanId` from the current `Activity`, allowing you to correlate logs and traces in Grafana.
-
-See the root `docker-compose.yml` to spin up a local Grafana + Tempo + Prometheus stack for functional testing.
+For OTLP export and Prometheus metrics, add `Itenium.Forge.Telemetry` — see that package's README for configuration.
 
 ---
 
@@ -70,7 +52,7 @@ Example `appsettings.json` when you want to override the default values:
 ```json
 {
   "Serilog": {
-    
+
   }
 }
 ```

@@ -29,6 +29,9 @@ public static class LoggingExtensions
 
         builder.Services.AddProblemDetails();
         builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+
+        builder.Services.AddTransient<TraceparentHandler>();
+        builder.Services.ConfigureHttpClientDefaults(b => b.AddHttpMessageHandler<TraceparentHandler>());
     }
 
     /// <summary>
