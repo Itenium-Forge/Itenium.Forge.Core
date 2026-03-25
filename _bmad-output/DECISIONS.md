@@ -6,6 +6,83 @@ Each entry follows the ADR format: **Context** (why we faced this choice), **Dec
 
 ---
 
+## ADR-008 — Pagination uses 1-based page numbers and page number + page size parameters
+
+- **Date:** 2026-03-25
+- **Status:** Proposed
+- **Branch/Story:** A6 — `IForgePagedResult<T>` + pagination contracts
+
+**Summary:** `ForgePageQuery` exposes `Page` (1-based) and `PageSize` rather than `Offset` and `Limit`. Page numbers start at 1, not 0.
+
+### Context
+
+Two independent choices must be made when designing a pagination API contract:
+
+1. **How to express position:** page number + page size vs. raw offset + limit
+2. **Where page numbering starts:** 1-based vs. 0-based
+
+Both are pure convention choices with no technical winner. They must be settled before any consuming code (B14 EF Core extension, ForgeBuilder UI blocks, API controllers) is written — changing the contract later is a breaking change for all consumers.
+
+#### Option A — Page number + page size (`?page=2&pageSize=20`)
+
+- Consumer thinks in pages: "give me page 2"
+- Maps naturally to UI pagination controls that show "Page 2 of 10"
+- `TotalPages`, `HasPreviousPage`, `HasNextPage` on the result type read intuitively
+- Offset is an internal concern: `(page - 1) * pageSize` — consumers never see it
+- Standard in most REST APIs targeting human-facing UIs (ASP.NET Core, Spring, Django REST)
+
+#### Option B — Offset + limit (`?offset=20&limit=20`)
+
+- Consumer thinks in rows: "skip 20 rows, give me 20"
+- More flexible — can resume from an arbitrary row
+- Common in APIs designed for programmatic consumers or streaming exports (GitHub API, many SQL-style REST APIs)
+- `TotalPages` becomes awkward to compute client-side; `HasNextPage` requires knowing total count
+
+#### Option C — 0-based page numbers (`?page=0&pageSize=20`)
+
+- Consistent with array/list indexing in most languages
+- `Skip = page * pageSize` is marginally simpler than `(page - 1) * pageSize`
+- Confusing in UI contexts: "Page 0 of 9" is never what a user sees
+- `HasPreviousPage => Page > 0` is technically correct but reads oddly
+
+#### Option D — 1-based page numbers (`?page=1&pageSize=20`)
+
+- Matches how users and UI controls express pages
+- `HasPreviousPage => Page > 1` reads naturally
+- `ForgePageQuery` default of `Page = 1` is unambiguous — there is always a first page
+- Off-by-one risk is isolated to the single internal `(page - 1) * pageSize` calculation
+
+### Decision
+
+Use **page number + page size** (Option A) with **1-based page numbers** (Option D).
+
+```csharp
+// Query parameters
+GET /api/resources?page=2&pageSize=20
+
+// Result contract
+{
+  "items": [...],
+  "page": 2,
+  "pageSize": 20,
+  "totalCount": 57,
+  "totalPages": 3,
+  "hasPreviousPage": true,
+  "hasNextPage": true
+}
+```
+
+`ForgePageQuery` defaults: `Page = 1`, `PageSize = 20`.
+
+### Consequences
+
+- UI components receive `page`, `totalPages`, `hasPreviousPage`, `hasNextPage` — no client-side arithmetic needed.
+- The internal offset calculation `(page - 1) * pageSize` lives in one place: `IQueryable<T>.ToForgePagedResultAsync()` (B14).
+- Offset/limit-style access (e.g. streaming exports) is not supported by this contract; a separate `ForgeScrollQuery` can be introduced when a concrete use case arises.
+- `page=0` submitted by a client is an invalid request; consumers must validate and return 400. A `PageSize` maximum cap is not enforced by the contract — individual controllers or a future Forge filter can add this.
+
+---
+
 ## ADR-003 — Use `System.Diagnostics.Activity` in Logging without an OTel package dependency
 
 - **Date:** 2026-03-24
