@@ -5,3 +5,5 @@ logs
 *.DotSettings.user
 .claude/
 _bmad/
+TestResults/
+coverage-report/

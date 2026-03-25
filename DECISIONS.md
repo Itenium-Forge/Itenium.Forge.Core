@@ -6,6 +6,72 @@ Each entry follows the ADR format: **Context** (why we faced this choice), **Dec
 
 ---
 
+## ADR-006 — No `AddForgeSecurityHeaders`, only `UseForgeSecurityHeaders`
+
+- **Date:** 2026-03-24
+- **Status:** Accepted
+- **Branch/Story:** A2 — Security Headers
+
+### Context
+
+Every other Forge package exposes a paired `Add*/Use*` API: `AddForgeLogging` registers services, `UseForgeLogging` registers middleware. The `Add` half exists because most packages register things in the DI container (Serilog, exception handlers, health checks, etc.).
+
+### Decision
+
+`Itenium.Forge.SecurityHeaders` exposes only `UseForgeSecurityHeaders`. There is nothing to register in DI — the `HeaderPolicyCollection` is built inline and passed directly to the middleware constructor.
+
+### Consequences
+
+- Consuming apps call only `UseForgeSecurityHeaders()` — no `AddForgeSecurityHeaders()` call needed.
+- Deviates slightly from the Forge convention; documented here so future contributors know this is intentional.
+- If DI-registered policies are ever needed (e.g. environment-aware CSP), an `AddForgeSecurityHeaders` can be introduced then.
+
+---
+
+## ADR-005 — Apply security headers directly, not via `Response.OnStarting`
+
+- **Date:** 2026-03-24
+- **Status:** Accepted
+- **Branch/Story:** A2 — Security Headers
+
+### Context
+
+`NetEscapades.AspNetCore.SecurityHeaders` (the reference implementation) applies headers inside a `Response.OnStarting` callback so they are written at the last possible moment before the response is sent. This protects against downstream middleware overwriting them. However, `Response.OnStarting` callbacks are not fired by `DefaultHttpContext` in unit tests — only by the Kestrel pipeline — making unit tests impossible without a full integration test setup.
+
+### Decision
+
+Apply headers directly at the start of `SecurityHeadersMiddleware.Invoke`, before calling `_next`. `UseForgeSecurityHeaders` is registered early in the pipeline (before routing, controllers, and error handling), so there is no realistic downstream middleware that would remove security headers.
+
+### Consequences
+
+- All unit tests can use `DefaultHttpContext` without a running Kestrel server.
+- Theoretically, a middleware registered after `UseForgeSecurityHeaders` could overwrite headers. In practice, no Forge middleware does this, and the position in the pipeline prevents it.
+
+---
+
+## ADR-004 — Source-copy `NetEscapades.AspNetCore.SecurityHeaders` instead of NuGet dependency; exclude CSP from defaults
+
+- **Date:** 2026-03-24
+- **Status:** Accepted
+- **Branch/Story:** A2 — Security Headers
+
+### Context
+
+`NetEscapades.AspNetCore.SecurityHeaders` is the standard library for security headers in ASP.NET Core. Taking it as a NuGet dependency would mean the Forge package exposes a transitive dependency on a third-party library for what is essentially a small amount of header-writing logic. Additionally, `Content-Security-Policy` — the most complex header the library supports — breaks Swagger UI in development because Swagger uses inline scripts and styles that a strict CSP would block.
+
+### Decision
+
+Copy the core design (middleware + `HeaderPolicyCollection` + per-header policy classes) from [NetEscapades.AspNetCore.SecurityHeaders](https://github.com/andrewlock/NetEscapades.AspNetCore.SecurityHeaders) into `Itenium.Forge.SecurityHeaders` with no external NuGet dependencies. The default policy (`AddApiDefaults`) includes the headers meaningful for a JSON web API — `X-Content-Type-Options`, `X-Frame-Options`, `Strict-Transport-Security`, `Referrer-Policy`, `Permissions-Policy` — and deliberately omits `Content-Security-Policy`.
+
+### Consequences
+
+- `Itenium.Forge.SecurityHeaders` has **zero external NuGet dependencies**.
+- Teams that need CSP can add it manually via `UseForgeSecurityHeaders(p => p.AddContentSecurityPolicy(...))` once they implement the policy class, or use NetEscapades directly alongside.
+- Swagger UI works out of the box in development with no extra configuration.
+- The implementation is intentionally simpler than NetEscapades (no nonce support, no endpoint-specific policies) — sufficient for the API use case.
+
+---
+
 ## ADR-003 — Use `System.Diagnostics.Activity` in Logging without an OTel package dependency
 
 - **Date:** 2026-03-24

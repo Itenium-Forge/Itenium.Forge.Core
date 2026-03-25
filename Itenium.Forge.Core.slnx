@@ -19,6 +19,8 @@
   <Project Path="Itenium.Forge.Logging/Itenium.Forge.Logging.csproj" Id="b864a22e-a0ca-4fdf-b94f-ac98c293581d" />
   <Project Path="Itenium.Forge.Telemetry/Itenium.Forge.Telemetry.csproj" />
   <Project Path="Itenium.Forge.Telemetry.Tests/Itenium.Forge.Telemetry.Tests.csproj" />
+  <Project Path="Itenium.Forge.SecurityHeaders/Itenium.Forge.SecurityHeaders.csproj" />
+  <Project Path="Itenium.Forge.SecurityHeaders.Tests/Itenium.Forge.SecurityHeaders.Tests.csproj" />
   <Project Path="Itenium.Forge.Security.Keycloak/Itenium.Forge.Security.Keycloak.csproj" />
   <Project Path="Itenium.Forge.Security.OpenIddict/Itenium.Forge.Security.OpenIddict.csproj" />
   <Project Path="Itenium.Forge.Security/Itenium.Forge.Security.csproj" Id="3045e3ed-b4dc-407b-9bde-d1115e42911c" />

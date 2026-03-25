@@ -9,6 +9,7 @@ using Itenium.Forge.Security;
 using Itenium.Forge.Telemetry;
 using Itenium.Forge.Security.OpenIddict;
 using Itenium.Forge.Settings;
+using Itenium.Forge.SecurityHeaders;
 using Itenium.Forge.Swagger;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
@@ -47,6 +48,7 @@ try
     app.UseForgeLogging();
     app.UseForgeTelemetry();
     app.UseForgeSecurity();
+    app.UseForgeSecurityHeaders();
 
     app.UseForgeControllers();
     if (app.Environment.IsDevelopment())
