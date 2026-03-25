@@ -8,6 +8,7 @@
     <File Path="LICENSE" />
     <File Path="nuget.config" />
     <File Path="_bmad-output/DECISIONS.md" />
+    <File Path="PROGRESS.md" />
     <File Path="README.md" />
   </Folder>
   <Project Path="Itenium.Forge.Controllers/Itenium.Forge.Controllers.csproj" Id="8b40a1ef-4f1b-47cc-8c9c-253991ac3e46" />
@@ -22,6 +23,7 @@
   <Project Path="Itenium.Forge.SecurityHeaders/Itenium.Forge.SecurityHeaders.csproj" />
   <Project Path="Itenium.Forge.SecurityHeaders.Tests/Itenium.Forge.SecurityHeaders.Tests.csproj" />
   <Project Path="Itenium.Forge.Security.Keycloak/Itenium.Forge.Security.Keycloak.csproj" />
+  <Project Path="Itenium.Forge.Security.Tests/Itenium.Forge.Security.Tests.csproj" />
   <Project Path="Itenium.Forge.Security.OpenIddict/Itenium.Forge.Security.OpenIddict.csproj" />
   <Project Path="Itenium.Forge.Security/Itenium.Forge.Security.csproj" Id="3045e3ed-b4dc-407b-9bde-d1115e42911c" />
   <Project Path="Itenium.Forge.Settings.Tests/Itenium.Forge.Settings.Tests.csproj" />

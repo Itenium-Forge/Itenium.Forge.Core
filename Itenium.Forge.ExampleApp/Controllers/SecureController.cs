@@ -24,6 +24,7 @@ public class SecureController : ControllerBase
     /// <summary>
     /// Public endpoint - no authentication required
     /// </summary>
+    [AllowAnonymous]
     [HttpGet("public")]
     public IActionResult Public()
     {

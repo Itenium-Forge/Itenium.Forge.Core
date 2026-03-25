@@ -21,16 +21,18 @@ public static class OpenIddictExtensions
     /// <typeparam name="TContext">Your DbContext type (must inherit from ForgeIdentityDbContext)</typeparam>
     /// <param name="builder">The WebApplicationBuilder</param>
     /// <param name="configureDbContext">Action to configure the DbContext (e.g., connection string)</param>
+    /// <param name="configureAuthorization">Action to configure the authorization default policy and named policies.</param>
     public static void AddForgeOpenIddict<TContext>(
         this WebApplicationBuilder builder,
-        Action<DbContextOptionsBuilder> configureDbContext)
+        Action<DbContextOptionsBuilder> configureDbContext,
+        Action<ForgeAuthorizationBuilder>? configureAuthorization = null)
         where TContext : ForgeIdentityDbContext
     {
         var config = builder.Configuration
             .GetSection("ForgeConfiguration:Security")
             .Get<OpenIddictConfiguration>() ?? new OpenIddictConfiguration();
 
-        builder.Services.AddForgeSecurityCore();
+        builder.Services.AddForgeSecurityCore(configureAuthorization);
         builder.Services.AddDbContext<TContext>(configureDbContext);
 
         builder.Services.AddIdentity<ForgeUser, IdentityRole>(options =>
@@ -101,24 +103,6 @@ public static class OpenIddictExtensions
         {
             options.DefaultAuthenticateScheme = OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme;
             options.DefaultChallengeScheme = OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme;
-        });
-
-        // Configure authorization policies
-        builder.Services.AddAuthorization(options =>
-        {
-            foreach (var roleName in config.RoleCapabilities.Keys)
-            {
-                options.AddPolicy(roleName, policy => policy.RequireRole(roleName));
-            }
-
-            var allCapabilities = config.RoleCapabilities.Values
-                .SelectMany(c => c)
-                .Distinct();
-
-            foreach (var capability in allCapabilities)
-            {
-                options.AddPolicy(capability, policy => policy.RequireClaim("capability", capability));
-            }
         });
 
         // Store config for seeding

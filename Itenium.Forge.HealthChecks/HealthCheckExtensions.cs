@@ -31,12 +31,12 @@ public static class HealthCheckExtensions
         {
             Predicate = check => check.Tags.Contains("live"),
             ResponseWriter = ForgeHealthCheckResponseWriter.WriteResponse
-        });
+        }).AllowAnonymous();
 
         app.MapHealthChecks("/health/ready", new HealthCheckOptions
         {
             Predicate = check => check.Tags.Contains("ready"),
             ResponseWriter = ForgeHealthCheckResponseWriter.WriteResponse
-        });
+        }).AllowAnonymous();
     }
 }

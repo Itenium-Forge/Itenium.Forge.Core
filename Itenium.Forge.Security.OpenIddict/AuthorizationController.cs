@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using OpenIddict.Abstractions;
@@ -32,6 +33,7 @@ public class AuthorizationController : ControllerBase
     /// <summary>
     /// Handles token requests (password grant, refresh token, authorization code).
     /// </summary>
+    [AllowAnonymous]
     [HttpPost("~/connect/token")]
     [Produces("application/json")]
     public async Task<IActionResult> Exchange()

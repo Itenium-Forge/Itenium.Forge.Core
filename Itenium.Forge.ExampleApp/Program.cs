@@ -24,7 +24,14 @@ try
     builder.AddForgeTelemetry();
 
     var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-    builder.AddForgeOpenIddict<AppDbContext>(options => options.UseSqlite(connectionString));
+    builder.AddForgeOpenIddict<AppDbContext>(
+        options => options.UseSqlite(connectionString),
+        auth => auth
+            .RequireAuthenticatedByDefault()
+            .AddPolicy("admin", policy => policy.RequireRole("admin"))
+            .AddPolicy("user", policy => policy.RequireRole("user"))
+            .AddPolicy(nameof(Capability.ReadResX), policy => policy.RequireClaim("capability", nameof(Capability.ReadResX)))
+            .AddPolicy(nameof(Capability.WriteResX), policy => policy.RequireClaim("capability", nameof(Capability.WriteResX))));
 
     builder.Services.AddScoped<IExampleAppUser, ExampleAppUser>();
 

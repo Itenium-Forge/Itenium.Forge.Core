@@ -102,15 +102,13 @@ public class ProblemControllerTests
     }
 
     [Test]
-    public async Task NonExistentRoute_ReturnsProblemDetails_With404()
+    public async Task NonExistentRoute_WithoutToken_ReturnsUnauthorized()
     {
+        // With RequireAuthenticatedByDefault, the FallbackPolicy intercepts before routing resolves.
+        // Unauthenticated requests to unknown routes get 401, not 404 — route existence is not leaked.
         var response = await _client.GetAsync("/api/does-not-exist");
-        var content = await response.Content.ReadAsStringAsync();
-        var problem = JsonSerializer.Deserialize<JsonElement>(content);
 
-        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.NotFound));
-        Assert.That(response.Content.Headers.ContentType?.MediaType, Is.EqualTo("application/problem+json"));
-        Assert.That(problem.GetProperty("status").GetInt32(), Is.EqualTo(404));
+        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.Unauthorized));
     }
 
     [Test]
