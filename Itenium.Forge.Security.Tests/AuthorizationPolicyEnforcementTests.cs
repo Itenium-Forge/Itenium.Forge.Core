@@ -102,6 +102,28 @@ public class AuthorizationPolicyEnforcementTests
     }
 
     [Test]
+    public void Production_RequireAuthenticatedByDefaultWithNoPolicies_DoesNotEmitWarning()
+    {
+        var (app, logs) = BuildAppWithLogs(Environments.Production,
+            auth => auth.RequireAuthenticatedByDefault());
+        app.UseForgeSecurity();
+
+        Assert.That(logs, Is.Empty);
+    }
+
+    [Test]
+    public void Production_RequireAuthenticatedByDefaultWithNoPolicies_FallbackPolicyRequiresAuthenticatedUser()
+    {
+        var app = BuildApp(Environments.Production,
+            auth => auth.RequireAuthenticatedByDefault());
+        app.UseForgeSecurity();
+
+        var authOptions = app.Services.GetRequiredService<IOptions<AuthorizationOptions>>().Value;
+        Assert.That(authOptions.FallbackPolicy?.Requirements,
+            Has.Some.InstanceOf<DenyAnonymousAuthorizationRequirement>());
+    }
+
+    [Test]
     public void Production_RequireAuthenticatedByDefaultWithPolicies_StartsSuccessfully()
     {
         var app = BuildApp(Environments.Production,
