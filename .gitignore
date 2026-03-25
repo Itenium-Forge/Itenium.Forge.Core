@@ -7,3 +7,5 @@ logs
 _bmad/
 TestResults/
 coverage-report/
+appsettings.Local.json
+!Itenium.Forge.Settings.Tests/appsettings.Local.json
