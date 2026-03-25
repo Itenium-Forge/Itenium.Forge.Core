@@ -20,7 +20,12 @@ public static class LoggingExtensions
     /// For OpenTelemetry tracing and metrics call <c>AddForgeTelemetry()</c> from
     /// the <c>Itenium.Forge.Telemetry</c> package.
     /// </summary>
-    public static void AddForgeLogging(this WebApplicationBuilder builder)
+    /// <param name="builder">The web application builder.</param>
+    /// <param name="configureMasking">
+    /// Optional delegate to configure which fields are masked in request logs.
+    /// When <c>null</c>, the <see cref="FieldMaskingOptions.DefaultFields"/> are used.
+    /// </param>
+    public static void AddForgeLogging(this WebApplicationBuilder builder, Action<FieldMaskingOptions>? configureMasking = null)
     {
         var loggingConfig = builder.Configuration.GetSection("ForgeConfiguration:Logging").Get<LoggingConfiguration>();
         var forgeSettings = builder.Configuration.GetSection("Forge").Get<ForgeSettings>();
@@ -32,6 +37,10 @@ public static class LoggingExtensions
 
         builder.Services.AddTransient<TraceparentHandler>();
         builder.Services.ConfigureHttpClientDefaults(b => b.AddHttpMessageHandler<TraceparentHandler>());
+
+        var maskingOptions = new FieldMaskingOptions();
+        configureMasking?.Invoke(maskingOptions);
+        builder.Services.AddSingleton(maskingOptions);
     }
 
     /// <summary>

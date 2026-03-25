@@ -1,5 +1,90 @@
 # Decision Log
 
+## ADR-005 — Request logging field masking: JSON body + query string, recursive, case-insensitive
+
+- **Date:** 2026-03-25
+- **Status:** Proposed
+- **Branch/Story:** A9 — Request/response logging field masking
+
+**Summary:** Sensitive fields in JSON request bodies and query-string parameters are replaced with `***` before logging. Masking is recursive (deep), case-insensitive, configurable, and applied exclusively in the logging middleware.
+
+### Context
+
+`RequestLoggingMiddleware` logs the full request body and query string. Without masking, secrets such as passwords or tokens appear in plain text in Serilog sinks (file, Loki). The implementation must decide:
+
+1. **Which parts of the request to mask** — body only, or also query string?
+2. **How deeply to traverse** — top-level keys only, or recursive into nested objects and arrays?
+3. **How to handle non-JSON bodies** — redact entirely or pass through unchanged?
+4. **Where in the stack to apply masking** — middleware, model layer, or Serilog destructure policy?
+5. **How custom field lists interact with the defaults** — extend, or replace entirely?
+
+### What is masked and what is not
+
+| Target | Masked? | Reason |
+|--------|:-------:|--------|
+| JSON request body — matching field values | Yes | Primary attack surface |
+| Query-string — matching parameter values | Yes | Low-cost, same risk profile |
+| Nested / array fields in JSON body | Yes | Shallow masking is trivially bypassed |
+| Response body | No | Not currently logged; out of scope |
+| HTTP headers (e.g. `Authorization`) | No | Headers are not logged by the middleware |
+| Non-JSON request body (form data, binary) | No | Returned as-is; no reliable key extraction |
+
+#### Default masked fields (case-insensitive)
+
+| Field name | Typical use |
+|------------|-------------|
+| `password` | Login / register payloads |
+| `passwd` | Legacy / Unix-style naming |
+| `token` | Generic token field |
+| `secret` | Client secrets, shared secrets |
+| `authorization` | Auth header mirrored in body |
+| `client_secret` | OAuth2 client credentials |
+| `api_key` | API key fields |
+| `access_token` | OAuth2 access tokens |
+| `refresh_token` | OAuth2 refresh tokens |
+
+### Decisions
+
+#### 1. Custom `MaskedFields` replaces the defaults entirely
+
+When a caller calls `options.SetFields(...)` the default set is discarded and replaced. `options.AddFields(...)` extends the defaults. This gives full control without surprising interactions.
+
+**Why:** An opt-in extension (`AddFields`) is the common case; a full replacement (`SetFields`) is provided for teams that want a narrower or entirely different list.
+
+#### 2. Non-JSON bodies are passed through unchanged
+
+If the body cannot be parsed as a `JsonNode`, the raw string is logged as-is with no redaction.
+
+**Why:** Form-encoded and multipart bodies have no reliable key structure. Redacting the entire body would lose diagnostic value for the majority of non-sensitive payloads. Teams with sensitive form fields should switch to JSON or handle masking at the model layer.
+
+#### 3. Masking is recursive (deep traversal)
+
+Both JSON objects and JSON arrays are traversed. Any string-valued leaf whose property name matches a masked field name is replaced with `"***"`.
+
+**Why:** Shallow masking is trivially bypassed by nesting a `password` field one level deeper (e.g. inside an `auth` wrapper object). Deep masking is the only safe default.
+
+#### 4. Masking is applied in `RequestLoggingMiddleware`, not at the model layer
+
+The masking runs on the raw body string just before the log call.
+
+**Why:** Applying it at the model layer (custom `JsonConverter`, `IModelBinder`) would mask values in application memory, making debugging harder. Middleware masking is logging-only and does not affect business logic.
+
+#### 5. Query-string parameter values are also masked
+
+The query-string dictionary is traversed; values for matching keys are replaced with `***`.
+
+**Why:** Tokens and API keys are sometimes passed as query parameters (e.g. `?api_key=...`). The cost is negligible and the risk profile is identical to the JSON body.
+
+### Consequences
+
+- `FieldMaskingOptions` is registered as a singleton; callers configure it via `AddForgeLogging(options => ...)`.
+- `FieldMasker` is an `internal static` helper — no public API surface.
+- If the JSON body cannot be parsed (invalid JSON), it is logged as-is. No silent data loss.
+- Response body masking is out of scope. If needed in future, it should be its own feature.
+- Header masking is out of scope. Teams that log headers should use Serilog destructure policies.
+
+---
+
 Architectural decisions made in this repository, recorded in reverse-chronological order.
 
 Each entry follows the ADR format: **Context** (why we faced this choice), **Decision** (what we chose), **Consequences** (trade-offs accepted).

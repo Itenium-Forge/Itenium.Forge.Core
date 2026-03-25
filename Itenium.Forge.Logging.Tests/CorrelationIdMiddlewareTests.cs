@@ -145,6 +145,23 @@ public class CorrelationIdMiddlewareTests
         Assert.That(nextCalled, Is.True);
     }
 
+    [Test]
+    public async Task Invoke_WithMalformedTraceparentHex_IgnoresHeaderAndGeneratesFreshTrace()
+    {
+        // Header passes structural check (4 parts, version "00") but contains invalid hex — exercises catch block
+        const string malformed = "00-ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ-ZZZZZZZZZZZZZZZZ-01";
+
+        var context = new DefaultHttpContext();
+        context.Request.Headers[CorrelationIdMiddleware.HeaderName] = malformed;
+        var middleware = new CorrelationIdMiddleware(_ => Task.CompletedTask);
+
+        await middleware.Invoke(context);
+
+        // Should not throw; a new trace ID is generated instead
+        Assert.That(context.TraceIdentifier, Is.Not.Null.And.Not.Empty);
+        Assert.That(context.TraceIdentifier, Is.Not.EqualTo(malformed));
+    }
+
     // ---------- helpers ----------
 
     private class CaptureSink : ILogEventSink

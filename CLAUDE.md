@@ -78,3 +78,45 @@ Consuming apps follow a fixed registration order:
 GitHub Actions workflows in `.github/workflows/`:
 - **build.yaml** — restore, build, test, pack on push/PR to master
 - **publish.yaml** — on version tags (`v*.*.*`), builds and pushes packages to GitHub Packages
+
+## PROGRESS.md
+
+`PROGRESS.md` tracks the status of every planned feature. Keep it in sync:
+
+- **When starting a feature branch:** cherry-pick `PROGRESS.md` from the latest feature branch so it carries forward all previously completed stories:
+  ```bash
+  git checkout <latest-feature-branch> -- PROGRESS.md
+  ```
+- **When pushing / finishing a story:** mark the story as 🟢 in `PROGRESS.md` and include the update in the same commit.
+- Only two statuses are used: 🟢 (complete) and ⭕ (not started).
+
+## Architecture Decision Records
+
+Non-obvious architectural choices are recorded in `DECISIONS.md` as ADRs. Add a new ADR whenever a decision has meaningful trade-offs that future contributors should understand.
+
+ADRs are numbered sequentially (`ADR-001`, `ADR-002`, …) and inserted at the **top** of `DECISIONS.md` (reverse-chronological order).
+
+### ADR template
+
+```markdown
+## ADR-NNN — <short title>
+
+- **Date:** YYYY-MM-DD
+- **Status:** Proposed | Accepted | Superseded by ADR-XXX
+- **Branch/Story:** <code> — <feature name>
+
+**Summary:** One-sentence plain-language description of the decision.
+
+### Context
+
+Why did we face this choice? What problem were we solving?
+List the options that were considered.
+
+### Decision
+
+What did we choose and why?
+
+### Consequences
+
+- Bullet list of trade-offs, constraints, or follow-up work accepted as a result.
+```

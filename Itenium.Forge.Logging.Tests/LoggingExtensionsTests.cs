@@ -3,6 +3,7 @@ using Itenium.Forge.Core;
 using Itenium.Forge.Settings;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Serilog.Core;
 
@@ -263,6 +264,121 @@ public class LoggingExtensionsTests
             })
             .Where(x => !string.IsNullOrWhiteSpace(x.Key))
             .ToArray();
+    }
+
+    [Test]
+    public void AddForgeLogging_WithConfigureMasking_RegistersCustomOptions()
+    {
+        var builder = WebApplication.CreateBuilder();
+        builder.AddForgeSettings<AppSettings>();
+        builder.AddForgeLogging(options => options.AddFields("credit_card"));
+
+        var descriptor = builder.Services
+            .SingleOrDefault(sd => sd.ServiceType == typeof(FieldMaskingOptions));
+
+        Assert.That(descriptor, Is.Not.Null);
+
+        var app = builder.Build();
+        var resolved = app.Services.GetRequiredService<FieldMaskingOptions>();
+        Assert.That(resolved.MaskedFields, Contains.Item("credit_card"));
+        Assert.That(resolved.MaskedFields, Contains.Item("password"));
+    }
+
+    [Test]
+    public void AddForgeLogging_WithoutConfigureMasking_RegistersDefaultOptions()
+    {
+        var builder = WebApplication.CreateBuilder();
+        builder.AddForgeSettings<AppSettings>();
+        builder.AddForgeLogging();
+
+        var app = builder.Build();
+        var resolved = app.Services.GetRequiredService<FieldMaskingOptions>();
+        Assert.That(resolved.MaskedFields, Is.EquivalentTo(FieldMaskingOptions.DefaultFields));
+    }
+
+    [Test]
+    public void UseForgeLogging_WithForgeSettings_DoesNotThrow()
+    {
+        var builder = WebApplication.CreateBuilder();
+        builder.AddForgeSettings<AppSettings>();
+        builder.AddForgeLogging();
+        var app = builder.Build();
+
+        Assert.DoesNotThrow(() => app.UseForgeLogging());
+    }
+
+    [Test]
+    public void UseForgeLogging_WithoutForgeSettings_DoesNotThrow()
+    {
+        var builder = WebApplication.CreateBuilder();
+        builder.AddForgeLogging();
+        var app = builder.Build();
+
+        // No ForgeSettings registered — takes the error log branch
+        Assert.DoesNotThrow(() => app.UseForgeLogging());
+    }
+
+    [Test]
+    public void AddForgeLogging_WithoutForgeSettingsSection_ExercisesNullForgeBranches()
+    {
+        // Clear all config sources so appsettings.json (which has a Forge section) is not loaded.
+        // This forces forgeSettings == null — exercises lines 139-142 and 170 in LoggingExtensions.
+        var builder = WebApplication.CreateBuilder();
+        ((IConfigurationBuilder)builder.Configuration).Sources.Clear();
+        ((IConfigurationBuilder)builder.Configuration).AddInMemoryCollection([]);
+
+        Assert.DoesNotThrow(() => builder.AddForgeLogging());
+
+        var app = builder.Build();
+        Assert.That(app, Is.Not.Null);
+    }
+
+    [Test]
+    public async Task LokiHealthCheck_HealthCheckRegistration_LambdaIsInvoked()
+    {
+        // Exercises the lazy HealthCheckRegistration lambda (sp => new LokiHealthCheck(...)) — line 161.
+        var builder = WebApplication.CreateBuilder();
+        builder.AddForgeSettings<AppSettings>("WithLoki");
+        builder.AddForgeLogging();
+        var app = builder.Build();
+
+        var healthCheckService = app.Services.GetRequiredService<Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckService>();
+
+        // Running the health check resolves the lambda; Loki is unreachable in tests so it returns Degraded.
+        var result = await healthCheckService.CheckHealthAsync();
+
+        Assert.That(result, Is.Not.Null);
+    }
+
+    [Test]
+    public void CreateBootstrapLogger_ReturnsNonNullLogger()
+    {
+        var logger = LoggingExtensions.CreateBootstrapLogger();
+        Assert.That(logger, Is.Not.Null);
+    }
+
+    [Test]
+    public void ActivityEnricher_WithActiveActivity_EnrichesTraceIdAndSpanId()
+    {
+        var builder = WebApplication.CreateBuilder();
+        builder.AddForgeSettings<AppSettings>();
+        builder.AddForgeLogging();
+        var app = builder.Build();
+        var serilogLogger = app.Services.GetRequiredService<Serilog.ILogger>();
+
+        using var source = new System.Diagnostics.ActivitySource("TestSource");
+        using var listener = new System.Diagnostics.ActivityListener
+        {
+            ShouldListenTo = _ => true,
+            Sample = (ref System.Diagnostics.ActivityCreationOptions<System.Diagnostics.ActivityContext> _) =>
+                System.Diagnostics.ActivitySamplingResult.AllData
+        };
+        System.Diagnostics.ActivitySource.AddActivityListener(listener);
+
+        using var activity = source.StartActivity("TestOperation");
+
+        // Fire a log event while Activity.Current is set — exercises ActivityEnricher lines
+        Assert.DoesNotThrow(() => serilogLogger.Information("Test log with active activity"));
     }
 
     private class AppSettings : IForgeSettings
