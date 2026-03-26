@@ -14,6 +14,6 @@ internal sealed class StrictTransportSecurityPolicy(TimeSpan maxAge, bool includ
 
         var value = $"max-age={(int)maxAge.TotalSeconds}";
         if (includeSubDomains) value += "; includeSubDomains";
-        context.Response.Headers["Strict-Transport-Security"] = value;
+        context.Response.Headers.StrictTransportSecurity = value;
     }
 }

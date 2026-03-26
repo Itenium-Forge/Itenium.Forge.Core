@@ -41,6 +41,10 @@ public class SecurityHeadersMiddlewareTests
         => Assert.That(await InvokeWithDefaults(), Contains.Key("Permissions-Policy"));
 
     [Test]
+    public async Task DefaultPolicy_AddsContentSecurityPolicy()
+        => Assert.That(await InvokeWithDefaults(), Contains.Key("Content-Security-Policy"));
+
+    [Test]
     public async Task DefaultPolicy_OmitsHsts_OverHttp()
     {
         var headers = await InvokeWithDefaults(isHttps: false);
@@ -71,10 +75,10 @@ public class SecurityHeadersMiddlewareTests
     }
 
     [Test]
-    public async Task ReferrerPolicy_DefaultValueIsStrictOriginWhenCrossOrigin()
+    public async Task ReferrerPolicy_DefaultValueIsNoReferrer()
     {
         var headers = await InvokeWithDefaults();
-        Assert.That(headers["Referrer-Policy"].ToString(), Is.EqualTo("strict-origin-when-cross-origin"));
+        Assert.That(headers["Referrer-Policy"].ToString(), Is.EqualTo("no-referrer"));
     }
 
     [Test]

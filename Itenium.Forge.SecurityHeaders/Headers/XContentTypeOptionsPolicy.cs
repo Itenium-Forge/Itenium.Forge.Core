@@ -6,5 +6,5 @@ namespace Itenium.Forge.SecurityHeaders.Headers;
 internal sealed class XContentTypeOptionsPolicy : IHeaderPolicy
 {
     public void Apply(HttpContext context)
-        => context.Response.Headers["X-Content-Type-Options"] = "nosniff";
+        => context.Response.Headers.XContentTypeOptions = "nosniff";
 }

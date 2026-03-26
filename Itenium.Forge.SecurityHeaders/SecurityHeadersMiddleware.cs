@@ -11,21 +11,39 @@ public class SecurityHeadersMiddleware
 {
     private readonly RequestDelegate _next;
     private readonly HeaderPolicyCollection _policy;
+    private readonly PathPolicyCollection? _pathPolicies;
 
-    public SecurityHeadersMiddleware(RequestDelegate next, HeaderPolicyCollection policy)
+    public SecurityHeadersMiddleware(
+        RequestDelegate next,
+        HeaderPolicyCollection policy,
+        PathPolicyCollection? pathPolicies = null)
     {
         _next = next;
         _policy = policy;
+        _pathPolicies = pathPolicies;
     }
 
     public Task Invoke(HttpContext context)
     {
         // Headers are applied directly here, not inside a Response.OnStarting callback.
-        // NetEscapades.AspNetCore.SecurityHeaders uses OnStarting so headers are written
-        // at the last possible moment, but OnStarting is never fired by DefaultHttpContext
-        // in unit tests — only by the Kestrel pipeline. Applying headers here keeps all
-        // tests runnable without a full integration test setup.
-        foreach (var policy in _policy.Values)
+        //
+        // NetEscapades.AspNetCore.SecurityHeaders uses OnStarting so that headers are
+        // written at the last possible moment — after all downstream middleware has run —
+        // ensuring nothing can overwrite them. This is a defensive pattern suited to a
+        // general-purpose library where the author cannot know what consumers will add
+        // downstream.
+        //
+        // For Forge, the startup order is prescribed: UseForgeSecurityHeaders is registered
+        // before controllers, problem details, and Swagger. No Forge middleware overwrites
+        // security headers downstream, so the OnStarting guarantee is overkill.
+        //
+        // Applying headers directly also means unit tests can use DefaultHttpContext
+        // without a running Kestrel server — OnStarting callbacks are only fired by the
+        // Kestrel pipeline, not by DefaultHttpContext.
+        var active = _pathPolicies?.Resolve(context.Request.Path.Value ?? string.Empty)
+                     ?? _policy;
+
+        foreach (var policy in active.Values)
             policy.Apply(context);
 
         return _next(context);

@@ -48,7 +48,11 @@ try
     app.UseForgeLogging();
     app.UseForgeTelemetry();
     app.UseForgeSecurity();
-    app.UseForgeSecurityHeaders();
+    app.UseForgeSecurityHeaders(
+        policy => policy.ForApi(),
+        paths => paths.ForPath("/swagger", p => p
+            .ForApi()
+            .RemoveHeader("Content-Security-Policy")));
 
     app.UseForgeControllers();
     if (app.Environment.IsDevelopment())

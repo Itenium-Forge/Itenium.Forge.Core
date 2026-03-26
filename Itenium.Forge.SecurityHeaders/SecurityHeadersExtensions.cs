@@ -5,40 +5,73 @@ namespace Itenium.Forge.SecurityHeaders;
 
 public static class SecurityHeadersExtensions
 {
-    /// <summary>
-    /// Adds the security headers middleware to the pipeline with Forge API defaults.
-    /// Call <paramref name="configure"/> to override or extend the default policy.
-    /// </summary>
     public static void UseForgeSecurityHeaders(
         this WebApplication app,
-        Action<HeaderPolicyCollection>? configure = null)
+        Action<HeaderPolicyCollection>? configure = null,
+        Action<PathPolicyCollection>? configurePaths = null)
     {
-        var policy = new HeaderPolicyCollection().AddApiDefaults();
+        var policy = new HeaderPolicyCollection().ForApi();
         configure?.Invoke(policy);
-        app.UseMiddleware<SecurityHeadersMiddleware>(policy);
+
+        PathPolicyCollection? pathPolicies = null;
+        if (configurePaths is not null)
+        {
+            pathPolicies = new PathPolicyCollection();
+            configurePaths(pathPolicies);
+        }
+
+        if (pathPolicies is null)
+            app.UseMiddleware<SecurityHeadersMiddleware>(policy);
+        else
+            app.UseMiddleware<SecurityHeadersMiddleware>(policy, pathPolicies);
     }
 
     // ------------------------------------------------------------------
-    // HeaderPolicyCollection builder methods
+    // Profiles
     // ------------------------------------------------------------------
 
-    /// <summary>Applies the default set of security headers suitable for a JSON web API.</summary>
-    public static HeaderPolicyCollection AddApiDefaults(this HeaderPolicyCollection policies) =>
+    /// <summary>
+    /// Strict profile for JSON web APIs.
+    /// Sets <c>Referrer-Policy: no-referrer</c> and <c>Content-Security-Policy: default-src 'none'</c>.
+    /// </summary>
+    public static HeaderPolicyCollection ForApi(this HeaderPolicyCollection policies) =>
+        policies
+            .AddXContentTypeOptions()
+            .AddXFrameOptions()
+            .AddReferrerPolicy("no-referrer")
+            .AddStrictTransportSecurity()
+            .AddPermissionsPolicy()
+            .AddContentSecurityPolicy("default-src 'none'; frame-ancestors 'none'");
+
+    /// <summary>
+    /// Profile for applications that serve HTML (MVC / Razor Pages).
+    /// Sets <c>Referrer-Policy: strict-origin-when-cross-origin</c> and a permissive-but-safe CSP.
+    /// </summary>
+    public static HeaderPolicyCollection ForBrowser(this HeaderPolicyCollection policies) =>
         policies
             .AddXContentTypeOptions()
             .AddXFrameOptions()
             .AddReferrerPolicy()
             .AddStrictTransportSecurity()
-            .AddPermissionsPolicy();
+            .AddPermissionsPolicy()
+            .AddContentSecurityPolicy(
+                "default-src 'self'; script-src 'self'; style-src 'self'; " +
+                "img-src 'self' data:; frame-ancestors 'none'");
 
-    /// <summary>X-Content-Type-Options: nosniff</summary>
+    /// <summary>Alias for <see cref="ForApi"/>.</summary>
+    public static HeaderPolicyCollection AddApiDefaults(this HeaderPolicyCollection policies) =>
+        policies.ForApi();
+
+    // ------------------------------------------------------------------
+    // HeaderPolicyCollection builder methods
+    // ------------------------------------------------------------------
+
     public static HeaderPolicyCollection AddXContentTypeOptions(this HeaderPolicyCollection policies)
     {
         policies["X-Content-Type-Options"] = new XContentTypeOptionsPolicy();
         return policies;
     }
 
-    /// <summary>X-Frame-Options: DENY (default) or SAMEORIGIN.</summary>
     public static HeaderPolicyCollection AddXFrameOptions(
         this HeaderPolicyCollection policies,
         string value = "DENY")
@@ -47,7 +80,7 @@ public static class SecurityHeadersExtensions
         return policies;
     }
 
-    /// <summary>Strict-Transport-Security: max-age=31536000; includeSubDomains (HTTPS only).</summary>
+    /// <summary>HTTPS only. Defaults to 1 year with <c>includeSubDomains</c>.</summary>
     public static HeaderPolicyCollection AddStrictTransportSecurity(
         this HeaderPolicyCollection policies,
         TimeSpan? maxAge = null,
@@ -58,7 +91,6 @@ public static class SecurityHeadersExtensions
         return policies;
     }
 
-    /// <summary>Referrer-Policy: strict-origin-when-cross-origin (default).</summary>
     public static HeaderPolicyCollection AddReferrerPolicy(
         this HeaderPolicyCollection policies,
         string value = "strict-origin-when-cross-origin")
@@ -67,10 +99,6 @@ public static class SecurityHeadersExtensions
         return policies;
     }
 
-    /// <summary>
-    /// Permissions-Policy: disables camera, microphone and geolocation by default.
-    /// Pass a custom value for full control, e.g. "camera=(), microphone=(), payment=()".
-    /// </summary>
     public static HeaderPolicyCollection AddPermissionsPolicy(
         this HeaderPolicyCollection policies,
         string value = "camera=(), microphone=(), geolocation=()")
@@ -79,7 +107,15 @@ public static class SecurityHeadersExtensions
         return policies;
     }
 
-    /// <summary>Removes a header from the policy (useful to suppress a default).</summary>
+    /// <summary>For standard profiles use <see cref="ForApi"/> or <see cref="ForBrowser"/>.</summary>
+    public static HeaderPolicyCollection AddContentSecurityPolicy(
+        this HeaderPolicyCollection policies,
+        string value)
+    {
+        policies["Content-Security-Policy"] = new ContentSecurityPolicy(value);
+        return policies;
+    }
+
     public static HeaderPolicyCollection RemoveHeader(this HeaderPolicyCollection policies, string headerName)
     {
         policies.Remove(headerName);

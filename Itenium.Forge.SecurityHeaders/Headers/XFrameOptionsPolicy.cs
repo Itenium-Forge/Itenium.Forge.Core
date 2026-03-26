@@ -6,5 +6,5 @@ namespace Itenium.Forge.SecurityHeaders.Headers;
 internal sealed class XFrameOptionsPolicy(string value) : IHeaderPolicy
 {
     public void Apply(HttpContext context)
-        => context.Response.Headers["X-Frame-Options"] = value;
+        => context.Response.Headers.XFrameOptions = value;
 }
