@@ -73,7 +73,7 @@ public class AuthorizationPolicyEnforcementTests
     }
 
     [Test]
-    public void Production_WithNoAuthorizationConfigured_EmitsWarning()
+    public void Production_WithNoAuthorizationConfigured_EmitsError()
     {
         var (app, logs) = BuildAppWithLogs(Environments.Production, auth: null);
         app.UseForgeSecurity();

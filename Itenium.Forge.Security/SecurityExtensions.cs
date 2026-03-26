@@ -70,13 +70,13 @@ public static class SecurityExtensions
                 throw new InvalidOperationException(IncompleteConfigurationMessage);
 
             if (!options.IsConfigured)
-                app.Logger.LogWarning(
+                app.Logger.LogError(
                     "Forge: No authorization policy configured. Defaulting to RequireAuthenticatedByDefault. " +
                     "Call RequireAuthenticatedByDefault() or AllowAnonymousByDefault() on the security builder.");
         }
         else if (options.Mode == ForgeAuthorizationMode.AllowAnonymous && !isDevelopment)
         {
-            app.Logger.LogWarning(
+            app.Logger.LogInformation(
                 "Forge: Authorization fallback policy is AllowAnonymous. " +
                 "All endpoints are publicly accessible unless individually decorated with [Authorize].");
         }

@@ -12,74 +12,25 @@ Each entry follows the ADR format: **Context** (why we faced this choice), **Dec
 - **Status:** Proposed
 - **Branch/Story:** A3 — Authorization Policy Enforcement
 
-**Summary:** Forge requires an explicit authorization decision at startup: either `AllowAnonymousByDefault()` or `RequireAuthenticatedByDefault()` with at least one named policy defined. In Development, omitting either crashes the app immediately. In all other environments, a safe fallback (require authenticated) is applied silently. The entire check is flag-based — no reflection, no endpoint scanning.
-
 ### Context
 
-After `AddForgeKeycloak()` or `AddForgeOpenIddict()` is called, ASP.NET Core's authorization pipeline is active but has no fallback policy. Any endpoint without an explicit `[Authorize]` attribute is publicly accessible by default. Nothing in the current Forge startup contract forces the developer to make a conscious choice about this. A developer can wire up the full security stack and still ship a wide-open API because they forgot a single configuration call.
-
-Additionally, calling `RequireAuthenticatedByDefault()` without defining any named authorization policies is also a half-finished configuration — endpoints decorated with `[Authorize(Policy = "admin")]` will throw at runtime if the policy was never registered.
-
-Enforcing this with reflection (scanning all registered controllers/routes to verify every endpoint is covered) would be expensive at startup and couple the check to the MVC route discovery phase — increasing startup time for a mistake that should have been caught during development.
+After `AddForgeKeycloak()` or `AddForgeOpenIddict()` is called, the authorization pipeline is active but has no fallback policy — any endpoint without `[Authorize]` is publicly accessible by default. Nothing in the startup contract forced the developer to make a conscious choice about this.
 
 ### Decision
 
-Make the authorization configuration an **explicit, required step**. Exactly one of the following must be called:
+Require an explicit authorization decision at startup. Exactly one of the following must be called on the security builder:
 
-```csharp
-// Option A — public API, no authentication required
-builder.AddForgeKeycloak(auth => auth.AllowAnonymousByDefault());
+- `AllowAnonymousByDefault()` — public API, no authentication required
+- `RequireAuthenticatedByDefault()` + at least one named `AddPolicy(...)` — authentication required by default
 
-// Option B — require authentication; at least one named policy must also be defined
-builder.AddForgeKeycloak(auth => auth
-    .RequireAuthenticatedByDefault()
-    .AddPolicy("admin", policy => policy.RequireRole("admin"))
-    .AddPolicy("user",  policy => policy.RequireRole("user")));
-```
-
-Both paths flip a flag (`ForgeAuthorizationOptions.IsConfigured = true`) on an options object registered in DI. `RequireAuthenticatedByDefault()` additionally requires that at least one named policy is registered — validated via the same flag mechanism, not reflection.
-
-#### Enforcement — Development (primary design intent)
-
-`UseForgeSecurity()` throws `InvalidOperationException` if:
-- Neither `AllowAnonymousByDefault()` nor `RequireAuthenticatedByDefault()` was called, **or**
-- `RequireAuthenticatedByDefault()` was called but no named policies were defined.
-
-```
-InvalidOperationException: No authorization policy configured.
-Call RequireAuthenticatedByDefault() (with at least one named policy) or AllowAnonymousByDefault().
-```
-
-The app does not start. This turns a latent security hole into an immediate, unmissable failure the moment the developer runs the app locally.
-
-#### Enforcement — all other environments (safety net)
-
-If no explicit configuration was made, `UseForgeSecurity()` silently applies `RequireAuthenticatedByDefault()` as a fallback and emits a startup warning:
-
-```
-[WARN] Forge: No authorization policy configured. Defaulting to RequireAuthenticatedByDefault.
-       Call RequireAuthenticatedByDefault() or AllowAnonymousByDefault() on the security builder.
-```
-
-Endpoints fail closed rather than open.
-
-#### `AllowAnonymousByDefault()` in non-Development environments
-
-`AllowAnonymousByDefault()` is valid in all environments — legitimate public APIs exist. When called outside Development, Forge emits a startup warning:
-
-```
-[WARN] Forge: Authorization fallback policy is AllowAnonymous.
-       All endpoints are publicly accessible unless individually decorated with [Authorize].
-```
+`UseForgeSecurity()` in `SecurityExtensions` validates this. In Development it throws `InvalidOperationException` immediately if the configuration is missing or incomplete, so the app never starts. In all other environments it logs an error and silently falls back to `RequireAuthenticatedByDefault` — endpoints fail closed rather than open.
 
 ### Consequences
 
-- Developers are forced to make a conscious, complete authorization decision at wiring time; mistakes surface in seconds locally, not in a security review.
-- `RequireAuthenticatedByDefault()` without policies is caught at startup, not at the first `[Authorize(Policy = "...")]` call at runtime.
-- No reflection, no MVC route scanning — startup overhead is negligible.
-- `UseForgeSecurity()` gains a dependency on `IWebHostEnvironment` to read the current environment.
-- CI pipelines typically run in a non-Development environment and receive the silent fallback rather than a hard crash — intentional; the crash is a developer feedback tool, not a CI gate.
-- Both `AddForgeKeycloak` and `AddForgeOpenIddict` expose the same builder API; the flag and validation logic lives once in `Itenium.Forge.Security`.
+- Developers are forced to make a conscious authorization decision at wiring time; mistakes surface locally, not in a security review.
+- `RequireAuthenticatedByDefault()` without named policies is caught at startup, not at the first `[Authorize(Policy = "...")]` call at runtime.
+- No reflection or route scanning — flag-based check, negligible startup overhead.
+- CI pipelines run in non-Development and receive the silent fallback — intentional; the crash is a developer feedback tool, not a CI gate.
 
 ---
 
