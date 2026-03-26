@@ -6,34 +6,6 @@ Each entry follows the ADR format: **Context** (why we faced this choice), **Dec
 
 ---
 
-## ADR-004 — Explicit authorization policy required; hard crash in Development if omitted
-
-- **Date:** 2026-03-25
-- **Status:** Proposed
-- **Branch/Story:** A3 — Authorization Policy Enforcement
-
-### Context
-
-After `AddForgeKeycloak()` or `AddForgeOpenIddict()` is called, the authorization pipeline is active but has no fallback policy — any endpoint without `[Authorize]` is publicly accessible by default. Nothing in the startup contract forced the developer to make a conscious choice about this.
-
-### Decision
-
-Require an explicit authorization decision at startup. Exactly one of the following must be called on the security builder:
-
-- `AllowAnonymousByDefault()` — public API, no authentication required
-- `RequireAuthenticatedByDefault()` + at least one named `AddPolicy(...)` — authentication required by default
-
-`UseForgeSecurity()` in `SecurityExtensions` validates this. In Development it throws `InvalidOperationException` immediately if the configuration is missing or incomplete, so the app never starts. In all other environments it logs an error and silently falls back to `RequireAuthenticatedByDefault` — endpoints fail closed rather than open.
-
-### Consequences
-
-- Developers are forced to make a conscious authorization decision at wiring time; mistakes surface locally, not in a security review.
-- `RequireAuthenticatedByDefault()` without named policies is caught at startup, not at the first `[Authorize(Policy = "...")]` call at runtime.
-- No reflection or route scanning — flag-based check, negligible startup overhead.
-- CI pipelines run in non-Development and receive the silent fallback — intentional; the crash is a developer feedback tool, not a CI gate.
-
----
-
 ## ADR-003 — Use `System.Diagnostics.Activity` in Logging without an OTel package dependency
 
 - **Date:** 2026-03-24

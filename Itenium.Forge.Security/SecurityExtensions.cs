@@ -66,6 +66,9 @@ public static class SecurityExtensions
 
         if (isIncomplete)
         {
+            // Crash in Development so the developer notices immediately.
+            // Outside Development, fall back silently to RequireAuthenticatedByDefault so
+            // endpoints fail closed rather than open — CI/staging never crash on this.
             if (isDevelopment)
                 throw new InvalidOperationException(IncompleteConfigurationMessage);
 
