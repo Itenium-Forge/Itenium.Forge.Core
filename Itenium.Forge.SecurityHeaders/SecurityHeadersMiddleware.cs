@@ -20,6 +20,11 @@ public class SecurityHeadersMiddleware
 
     public Task Invoke(HttpContext context)
     {
+        // Headers are applied directly here, not inside a Response.OnStarting callback.
+        // NetEscapades.AspNetCore.SecurityHeaders uses OnStarting so headers are written
+        // at the last possible moment, but OnStarting is never fired by DefaultHttpContext
+        // in unit tests — only by the Kestrel pipeline. Applying headers here keeps all
+        // tests runnable without a full integration test setup.
         foreach (var policy in _policy.Values)
             policy.Apply(context);
 
