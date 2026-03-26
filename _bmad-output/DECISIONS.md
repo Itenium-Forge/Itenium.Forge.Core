@@ -6,7 +6,7 @@ Each entry follows the ADR format: **Context** (why we faced this choice), **Dec
 
 ---
 
-## ADR-007 — Explicit authorization policy required; hard crash in Development if omitted
+## ADR-004 — Explicit authorization policy required; hard crash in Development if omitted
 
 - **Date:** 2026-03-25
 - **Status:** Proposed
