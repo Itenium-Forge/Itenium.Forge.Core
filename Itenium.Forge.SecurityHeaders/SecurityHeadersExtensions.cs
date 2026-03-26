@@ -50,10 +50,11 @@ public static class SecurityHeadersExtensions
     /// <summary>Strict-Transport-Security: max-age=31536000; includeSubDomains (HTTPS only).</summary>
     public static HeaderPolicyCollection AddStrictTransportSecurity(
         this HeaderPolicyCollection policies,
-        int maxAgeSeconds = 31_536_000,
+        TimeSpan? maxAge = null,
         bool includeSubDomains = true)
     {
-        policies["Strict-Transport-Security"] = new StrictTransportSecurityPolicy(maxAgeSeconds, includeSubDomains);
+        policies["Strict-Transport-Security"] = new StrictTransportSecurityPolicy(
+            maxAge ?? TimeSpan.FromDays(365), includeSubDomains);
         return policies;
     }
 

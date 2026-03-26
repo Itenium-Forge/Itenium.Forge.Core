@@ -6,28 +6,6 @@ Each entry follows the ADR format: **Context** (why we faced this choice), **Dec
 
 ---
 
-## ADR-006 — No `AddForgeSecurityHeaders`, only `UseForgeSecurityHeaders`
-
-- **Date:** 2026-03-24
-- **Status:** Accepted
-- **Branch/Story:** A2 — Security Headers
-
-### Context
-
-Every other Forge package exposes a paired `Add*/Use*` API: `AddForgeLogging` registers services, `UseForgeLogging` registers middleware. The `Add` half exists because most packages register things in the DI container (Serilog, exception handlers, health checks, etc.).
-
-### Decision
-
-`Itenium.Forge.SecurityHeaders` exposes only `UseForgeSecurityHeaders`. There is nothing to register in DI — the `HeaderPolicyCollection` is built inline and passed directly to the middleware constructor.
-
-### Consequences
-
-- Consuming apps call only `UseForgeSecurityHeaders()` — no `AddForgeSecurityHeaders()` call needed.
-- Deviates slightly from the Forge convention; documented here so future contributors know this is intentional.
-- If DI-registered policies are ever needed (e.g. environment-aware CSP), an `AddForgeSecurityHeaders` can be introduced then.
-
----
-
 ## ADR-005 — Apply security headers directly, not via `Response.OnStarting`
 
 - **Date:** 2026-03-24
