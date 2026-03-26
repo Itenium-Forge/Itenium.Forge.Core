@@ -6,7 +6,7 @@ Each entry follows the ADR format: **Context** (why we faced this choice), **Dec
 
 ---
 
-## ADR-008 — Pagination uses 1-based page numbers and page number + page size parameters
+## ADR-005 — Pagination uses 1-based page numbers and page number + page size parameters
 
 - **Date:** 2026-03-25
 - **Status:** Proposed
