@@ -16,7 +16,9 @@ public static class KeycloakExtensions
     /// Adds JWT Bearer authentication configured for Keycloak.
     /// Reads configuration from ForgeConfiguration:Security section.
     /// </summary>
-    public static void AddForgeKeycloak(this WebApplicationBuilder builder)
+    public static void AddForgeKeycloak(
+        this WebApplicationBuilder builder,
+        Action<ForgeAuthorizationBuilder>? configureAuthorization = null)
     {
         var config = builder.Configuration
             .GetSection("ForgeConfiguration:Security")
@@ -28,8 +30,8 @@ public static class KeycloakExtensions
                 "Keycloak configuration is missing. Add ForgeConfiguration:Security section to appsettings.json with Authority and Audience.");
         }
 
-        // Register common security services
-        builder.Services.AddForgeSecurityCore();
+        // Register common security services and authorization configuration
+        builder.Services.AddForgeSecurityCore(configureAuthorization);
 
         // Register Keycloak-specific claims transformer
         builder.Services.AddSingleton<IClaimsTransformation, KeycloakClaimsTransformer>();
@@ -60,10 +62,5 @@ public static class KeycloakExtensions
                 };
             });
 
-        builder.Services.AddAuthorization(options =>
-        {
-            options.AddPolicy("admin", policy => policy.RequireRole("admin"));
-            options.AddPolicy("user", policy => policy.RequireRole("user"));
-        });
     }
 }

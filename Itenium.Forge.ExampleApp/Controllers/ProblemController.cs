@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Itenium.Forge.ExampleApp.Controllers;
@@ -6,6 +7,7 @@ namespace Itenium.Forge.ExampleApp.Controllers;
 /// <summary>
 /// Test controller for verifying ProblemDetails error handling.
 /// </summary>
+[AllowAnonymous]
 [ApiController]
 [Route("api/[controller]")]
 public class ProblemController : ControllerBase

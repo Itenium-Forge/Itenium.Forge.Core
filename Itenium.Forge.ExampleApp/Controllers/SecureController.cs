@@ -24,6 +24,7 @@ public class SecureController : ControllerBase
     /// <summary>
     /// Public endpoint - no authentication required
     /// </summary>
+    [AllowAnonymous]
     [HttpGet("public")]
     public IActionResult Public()
     {
@@ -33,7 +34,7 @@ public class SecureController : ControllerBase
     /// <summary>
     /// Requires any authenticated user
     /// </summary>
-    [Authorize]
+    [Authorize(Policy = "user")]
     [HttpGet("authenticated")]
     public IActionResult Authenticated()
     {
@@ -107,7 +108,7 @@ public class SecureController : ControllerBase
     /// <summary>
     /// Demonstrates custom claims - returns the user's department
     /// </summary>
-    [Authorize]
+    [Authorize(Policy = "user")]
     [HttpGet("department")]
     public IActionResult GetDepartment()
     {
