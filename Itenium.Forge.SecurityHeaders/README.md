@@ -36,3 +36,8 @@ app.UseForgeSecurityHeaders(policy => policy
     .AddPermissionsPolicy("camera=(), payment=()")
     .RemoveHeader("X-Frame-Options")); // remove a default header
 ```
+
+## Attribution
+
+The middleware design (pipeline + `HeaderPolicyCollection` + per-header policy classes) is inspired by [NetEscapades.AspNetCore.SecurityHeaders](https://github.com/andrewlock/NetEscapades.AspNetCore.SecurityHeaders) by Andrew Lock.
+This package is a lighter, dependency-free adaptation scoped to JSON web API defaults, with `Content-Security-Policy` intentionally omitted to keep Swagger UI working out of the box.
