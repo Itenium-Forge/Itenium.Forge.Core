@@ -29,7 +29,7 @@
 | A5 | Rate limiting (`Microsoft.AspNetCore.RateLimiting`) | M | 4 | Lo | ⭕ | A1 |
 | A6 | `IForgePagedResult<T>` + pagination contracts | S | 5 | Med | ⭕ | — |
 | A7 | Response compression | S | 2 | Lo | ⭕ | Controllers |
-| A8 | Environment-specific overrides (`appsettings.{MachineName}.json`) | S | 3 | Lo | ⭕ | Settings |
+| A8 | Local developer overrides (`appsettings.Local.json`) | S | 3 | Lo | 🟢 | Settings |
 | A9 | Request/response logging field masking | S | 3 | Lo | ⭕ | Logging |
 | **Phase B — Data & Messaging** | | | | | | |
 | B1 | DbContext registration helper | M | 5 | Med | ⭕ | A2 |

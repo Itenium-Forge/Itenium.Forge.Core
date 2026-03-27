@@ -10,8 +10,7 @@ public static class SettingsExtensions
     /// <summary>
     /// Reads appsettings.json, appsettings.{environment}.json, and appsettings.Local.json.
     /// - Environment is DOTNET_ENVIRONMENT, defaulting to Development
-    /// - appsettings.Local.json is optional, gitignored, and takes highest precedence (see ADR-009)
-    /// - Updates the builder.Configuration
+    /// - appsettings.Local.json is optional, gitignored, and takes highest precedence
     /// - Adds TAppSettings and <see cref="ForgeSettings"/> as singleton service
     /// </summary>
     public static TAppSettings AddForgeSettings<TAppSettings>(this WebApplicationBuilder builder)

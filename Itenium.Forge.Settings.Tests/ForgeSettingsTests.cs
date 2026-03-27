@@ -79,7 +79,7 @@ public class ForgeSettingsTests
     }
 
     [Test]
-    public void Load_AllowsEmptyEnvironment_AndDefaultsToEnvironmentVariable()
+    public void Load_SetsForgeEnvironment_WhenNotPresentInAppsettings()
     {
         var builder = WebApplication.CreateBuilder();
         var settings = builder.AddForgeSettings<AppSettings>("Test");
@@ -119,9 +119,6 @@ public class ForgeSettingsTests
     [Test]
     public void LocalSettings_TakeHigherPrecedenceThanEnvironmentSettings()
     {
-        // appsettings.Test.json sets MyProp = false
-        // appsettings.Local.json sets LocalProp = "from-local" (does not touch MyProp)
-        // Verify both layers are independently applied — Local does not wipe the env layer
         var builder = WebApplication.CreateBuilder();
         var settings = builder.AddForgeSettings<AppSettings>("Test");
 
