@@ -10,22 +10,7 @@ public sealed class ForgePagedResult<T> : IForgePagedResult<T>
     public IReadOnlyList<T> Items { get; }
 
     /// <inheritdoc/>
-    public int Page { get; }
-
-    /// <inheritdoc/>
-    public int PageSize { get; }
-
-    /// <inheritdoc/>
-    public int TotalCount { get; }
-
-    /// <inheritdoc/>
-    public int TotalPages => (int)Math.Ceiling(TotalCount / (double)PageSize);
-
-    /// <inheritdoc/>
-    public bool HasPreviousPage => Page > 1;
-
-    /// <inheritdoc/>
-    public bool HasNextPage => Page < TotalPages;
+    public PageInfo Page { get; }
 
     /// <param name="items">The items on this page. Must not be null.</param>
     /// <param name="totalCount">Total number of items across all pages. Must be non-negative.</param>
@@ -39,8 +24,6 @@ public sealed class ForgePagedResult<T> : IForgePagedResult<T>
         ArgumentOutOfRangeException.ThrowIfLessThan(pageSize, 1);
 
         Items = items.ToList();
-        TotalCount = totalCount;
-        Page = page;
-        PageSize = pageSize;
+        Page = new PageInfo(page, pageSize, totalCount);
     }
 }

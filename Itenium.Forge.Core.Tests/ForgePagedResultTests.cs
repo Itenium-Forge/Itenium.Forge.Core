@@ -12,9 +12,9 @@ public class ForgePagedResultTests
     {
         var result = new ForgePagedResult<int>([1, 2, 3], totalCount: 10, page: 2, pageSize: 3);
 
-        Assert.That(result.Page, Is.EqualTo(2));
-        Assert.That(result.PageSize, Is.EqualTo(3));
-        Assert.That(result.TotalCount, Is.EqualTo(10));
+        Assert.That(result.Page.Page, Is.EqualTo(2));
+        Assert.That(result.Page.PageSize, Is.EqualTo(3));
+        Assert.That(result.Page.TotalCount, Is.EqualTo(10));
     }
 
     [Test]
@@ -40,7 +40,7 @@ public class ForgePagedResultTests
     {
         var result = new ForgePagedResult<int>([], totalCount: 7, page: 1, pageSize: 3);
 
-        Assert.That(result.TotalPages, Is.EqualTo(3));
+        Assert.That(result.Page.TotalPages, Is.EqualTo(3));
     }
 
     [Test]
@@ -48,7 +48,7 @@ public class ForgePagedResultTests
     {
         var result = new ForgePagedResult<int>([], totalCount: 6, page: 1, pageSize: 3);
 
-        Assert.That(result.TotalPages, Is.EqualTo(2));
+        Assert.That(result.Page.TotalPages, Is.EqualTo(2));
     }
 
     [Test]
@@ -56,7 +56,7 @@ public class ForgePagedResultTests
     {
         var result = new ForgePagedResult<int>([], totalCount: 5, page: 1, pageSize: 20);
 
-        Assert.That(result.TotalPages, Is.EqualTo(1));
+        Assert.That(result.Page.TotalPages, Is.EqualTo(1));
     }
 
     [Test]
@@ -64,25 +64,7 @@ public class ForgePagedResultTests
     {
         var result = new ForgePagedResult<int>([], totalCount: 0, page: 1, pageSize: 20);
 
-        Assert.That(result.TotalPages, Is.EqualTo(0));
-    }
-
-    // ---------- HasPreviousPage ----------
-
-    [Test]
-    public void HasPreviousPage_IsFalseOnFirstPage()
-    {
-        var result = new ForgePagedResult<int>([], totalCount: 100, page: 1, pageSize: 20);
-
-        Assert.That(result.HasPreviousPage, Is.False);
-    }
-
-    [Test]
-    public void HasPreviousPage_IsTrueOnSecondPage()
-    {
-        var result = new ForgePagedResult<int>([], totalCount: 100, page: 2, pageSize: 20);
-
-        Assert.That(result.HasPreviousPage, Is.True);
+        Assert.That(result.Page.TotalPages, Is.EqualTo(0));
     }
 
     // ---------- HasNextPage ----------
@@ -92,7 +74,7 @@ public class ForgePagedResultTests
     {
         var result = new ForgePagedResult<int>([], totalCount: 100, page: 1, pageSize: 20);
 
-        Assert.That(result.HasNextPage, Is.True);
+        Assert.That(result.Page.HasNextPage, Is.True);
     }
 
     [Test]
@@ -100,7 +82,7 @@ public class ForgePagedResultTests
     {
         var result = new ForgePagedResult<int>([], totalCount: 100, page: 5, pageSize: 20);
 
-        Assert.That(result.HasNextPage, Is.False);
+        Assert.That(result.Page.HasNextPage, Is.False);
     }
 
     [Test]
@@ -108,18 +90,17 @@ public class ForgePagedResultTests
     {
         var result = new ForgePagedResult<int>([], totalCount: 0, page: 1, pageSize: 20);
 
-        Assert.That(result.HasNextPage, Is.False);
+        Assert.That(result.Page.HasNextPage, Is.False);
     }
 
     // ---------- single-page result ----------
 
     [Test]
-    public void SinglePage_HasNeitherPreviousNorNextPage()
+    public void SinglePage_HasNoNextPage()
     {
         var result = new ForgePagedResult<int>([1, 2, 3], totalCount: 3, page: 1, pageSize: 20);
 
-        Assert.That(result.HasPreviousPage, Is.False);
-        Assert.That(result.HasNextPage, Is.False);
+        Assert.That(result.Page.HasNextPage, Is.False);
     }
 
     // ---------- constructor validation ----------
