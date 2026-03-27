@@ -1,8 +1,10 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.HostFiltering;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using System.IO.Compression;
 using System.Text.Json.Serialization;
 
 namespace Itenium.Forge.Controllers;
@@ -16,6 +18,16 @@ public static class ControllerExtensions
         {
             builder.Services.AddSingleton(hostSettings);
         }
+
+        builder.Services.AddResponseCompression(options =>
+        {
+            options.EnableForHttps = true;
+            options.Providers.Add<BrotliCompressionProvider>();
+            options.Providers.Add<GzipCompressionProvider>();
+            options.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(["application/json"]);
+        });
+        builder.Services.Configure<BrotliCompressionProviderOptions>(options => options.Level = CompressionLevel.Optimal);
+        builder.Services.Configure<GzipCompressionProviderOptions>(options => options.Level = CompressionLevel.SmallestSize);
 
         builder.Services.AddControllers().AddControllersAsServices().AddJsonOptions(options =>
         {
@@ -56,6 +68,7 @@ public static class ControllerExtensions
 
     public static void UseForgeControllers(this WebApplication app)
     {
+        app.UseResponseCompression();
         app.MapControllers();
     }
 }
