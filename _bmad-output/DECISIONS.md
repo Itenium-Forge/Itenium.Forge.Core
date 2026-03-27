@@ -6,6 +6,34 @@ Each entry follows the ADR format: **Context** (why we faced this choice), **Dec
 
 ---
 
+## ADR-004 — Local developer overrides use `appsettings.Local.json`, never machine name
+
+- **Date:** 2026-03-25
+- **Status:** Accepted
+- **Branch/Story:** A8 — Local developer appsettings
+
+### Context
+
+Developers need to override settings locally without affecting shared config files. `appsettings.{MachineName}.json` was rejected: filenames are unpredictable, the gitignore pattern must cover every machine name, and it breaks in containers and CI. ASP.NET Core user secrets are for credentials only — not suitable for non-secret local overrides like base URLs or feature flags.
+
+### Decision
+
+Load `appsettings.Local.json` as the final, highest-precedence configuration layer — gitignored and never committed.
+
+```
+appsettings.json
+  → appsettings.{environment}.json   (optional — shared, committed)
+    → appsettings.Local.json         (optional — local only, never committed)
+```
+
+### Consequences
+
+- One predictable filename; a single `.gitignore` entry covers all workstations.
+- CI/CD pipelines never have the file — they run on environment-specific config only.
+- Secrets do not belong here; use `dotnet user-secrets` or a secrets manager for credentials.
+
+---
+
 ## ADR-003 — Use `System.Diagnostics.Activity` in Logging without an OTel package dependency
 
 - **Date:** 2026-03-24

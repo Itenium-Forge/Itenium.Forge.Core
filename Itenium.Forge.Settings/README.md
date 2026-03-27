@@ -51,3 +51,26 @@ And `appsettings.Development.json`:
   "MyProp": false
 }
 ```
+
+## Local developer overrides
+
+Create `appsettings.Local.json` next to `appsettings.json` to override settings on your machine without affecting shared config files. The file is gitignored and never committed.
+
+```json
+{
+  "ConnectionStrings": {
+    "DefaultConnection": "Server=localhost;Database=mydb;"
+  }
+}
+```
+
+`appsettings.Local.json` takes highest precedence:
+
+```
+appsettings.json
+  → appsettings.{environment}.json   (shared, committed)
+    → appsettings.Local.json         (local only, never committed)
+```
+
+**Use this for:** local connection strings, service URLs, feature flags, log levels.
+**Do not use this for:** passwords, API keys, or any real credentials — use `dotnet user-secrets` instead.

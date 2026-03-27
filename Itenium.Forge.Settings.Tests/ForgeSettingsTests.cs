@@ -79,7 +79,7 @@ public class ForgeSettingsTests
     }
 
     [Test]
-    public void Load_AllowsEmptyEnvironment_AndDefaultsToEnvironmentVariable()
+    public void Load_SetsForgeEnvironment_WhenNotPresentInAppsettings()
     {
         var builder = WebApplication.CreateBuilder();
         var settings = builder.AddForgeSettings<AppSettings>("Test");
@@ -105,11 +105,33 @@ public class ForgeSettingsTests
         app.Services.GetRequiredService<ForgeSettings>();
     }
 
+    // ---------- appsettings.Local.json ----------
+
+    [Test]
+    public void LocalSettings_AreLoadedWhenFileExists()
+    {
+        var builder = WebApplication.CreateBuilder();
+        var settings = builder.AddForgeSettings<AppSettings>("Development");
+
+        Assert.That(settings.LocalProp, Is.EqualTo("from-local"));
+    }
+
+    [Test]
+    public void LocalSettings_TakeHigherPrecedenceThanEnvironmentSettings()
+    {
+        var builder = WebApplication.CreateBuilder();
+        var settings = builder.AddForgeSettings<AppSettings>("Test");
+
+        Assert.That(settings.MyProp, Is.False);
+        Assert.That(settings.LocalProp, Is.EqualTo("from-local"));
+    }
+
     private class AppSettings : IForgeSettings
     {
         public ForgeSettings Forge { get; } = new();
         public bool MyProp { get; set; }
         public AppSettingsEnum MyEnum { get; set; }
+        public string LocalProp { get; set; } = "";
     }
 
     private enum AppSettingsEnum

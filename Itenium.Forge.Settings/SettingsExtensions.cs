@@ -8,9 +8,9 @@ namespace Itenium.Forge.Settings;
 public static class SettingsExtensions
 {
     /// <summary>
-    /// Reads appsettings.json and appsettings.environment.json
+    /// Reads appsettings.json, appsettings.{environment}.json, and appsettings.Local.json.
     /// - Environment is DOTNET_ENVIRONMENT, defaulting to Development
-    /// - Updates the builder.Configuration
+    /// - appsettings.Local.json is optional, gitignored, and takes highest precedence
     /// - Adds TAppSettings and <see cref="ForgeSettings"/> as singleton service
     /// </summary>
     public static TAppSettings AddForgeSettings<TAppSettings>(this WebApplicationBuilder builder)
@@ -31,6 +31,8 @@ public static class SettingsExtensions
         {
             configurationBuilder.AddJsonFile($"appsettings.{environment}.json", optional: true, reloadOnChange: false);
         }
+
+        configurationBuilder.AddJsonFile("appsettings.Local.json", optional: true, reloadOnChange: false);
 
         IConfigurationRoot config = configurationBuilder.Build();
 
