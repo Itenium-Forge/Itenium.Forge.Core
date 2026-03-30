@@ -146,6 +146,41 @@ public class FieldMaskerTests
         Assert.That(result, Does.Not.Contain("deep"));
     }
 
+    // ---------- MaskHeaders ----------
+
+    [Test]
+    public void MaskHeaders_EmptyMaskedFields_ReturnsUnchanged()
+    {
+        var headers = new Dictionary<string, string> { ["Authorization"] = "Bearer token123" };
+        var result = FieldMasker.MaskHeaders(headers, new HashSet<string>());
+        Assert.That(result["Authorization"], Is.EqualTo("Bearer token123"));
+    }
+
+    [Test]
+    public void MaskHeaders_SensitiveHeader_ValueReplaced()
+    {
+        var headers = new Dictionary<string, string> { ["Authorization"] = "Bearer token123", ["Content-Type"] = "application/json" };
+        var result = FieldMasker.MaskHeaders(headers, FieldMaskingOptions.DefaultMaskedHeaders);
+        Assert.That(result["Authorization"], Is.EqualTo("***"));
+        Assert.That(result["Content-Type"], Is.EqualTo("application/json"));
+    }
+
+    [Test]
+    public void MaskHeaders_CaseInsensitiveKey_ValueReplaced()
+    {
+        var headers = new Dictionary<string, string> { ["authorization"] = "Bearer token123" };
+        var result = FieldMasker.MaskHeaders(headers, FieldMaskingOptions.DefaultMaskedHeaders);
+        Assert.That(result["authorization"], Is.EqualTo("***"));
+    }
+
+    [Test]
+    public void MaskHeaders_DoesNotMutateOriginalDictionary()
+    {
+        var headers = new Dictionary<string, string> { ["Authorization"] = "original" };
+        _ = FieldMasker.MaskHeaders(headers, FieldMaskingOptions.DefaultMaskedHeaders);
+        Assert.That(headers["Authorization"], Is.EqualTo("original"));
+    }
+
     // ---------- MaskQueryParams ----------
 
     [Test]

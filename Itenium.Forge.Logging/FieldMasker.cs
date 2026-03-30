@@ -58,6 +58,25 @@ internal static class FieldMasker
         return result;
     }
 
+    /// <summary>
+    /// Returns a dictionary with values replaced by <c>***</c> for header names that match
+    /// a field in <paramref name="maskedHeaderFields"/>. Same contract as
+    /// <see cref="MaskQueryParams"/> — original is not mutated.
+    /// </summary>
+    public static Dictionary<string, string> MaskHeaders(
+        Dictionary<string, string> headers,
+        IReadOnlySet<string> maskedHeaderFields)
+    {
+        if (maskedHeaderFields.Count == 0)
+            return headers;
+
+        var result = new Dictionary<string, string>(headers.Count, StringComparer.OrdinalIgnoreCase);
+        foreach (var (key, value) in headers)
+            result[key] = maskedHeaderFields.Contains(key) ? MaskValue : value;
+
+        return result;
+    }
+
     // -------------------------------------------------------------------------
 
     private static void MaskNode(JsonNode node, IReadOnlySet<string> maskedFields)

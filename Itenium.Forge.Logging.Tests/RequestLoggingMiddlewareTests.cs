@@ -175,10 +175,10 @@ public class RequestLoggingMiddlewareTests
     // ---------- custom masking options ----------
 
     [Test]
-    public async Task Invoke_CustomMaskedField_IsMasked()
+    public async Task Invoke_CustomMaskedField_IsMasked() // AddMaskedFields
     {
         var options = new FieldMaskingOptions();
-        options.AddFields("credit_card");
+        options.AddMaskedFields("credit_card");
         var (logger, middleware) = Build(options);
 
         var context = new DefaultHttpContext();
@@ -194,10 +194,10 @@ public class RequestLoggingMiddlewareTests
     }
 
     [Test]
-    public async Task Invoke_SetFields_ReplacesDefaults()
+    public async Task Invoke_SetMaskedFields_ReplacesDefaults()
     {
         var options = new FieldMaskingOptions();
-        options.SetFields("credit_card");
+        options.SetMaskedFields("credit_card");
         var (logger, middleware) = Build(options);
 
         var context = new DefaultHttpContext();
@@ -211,6 +211,72 @@ public class RequestLoggingMiddlewareTests
         // credit_card is masked; password is NOT masked (defaults replaced)
         Assert.That(logger.Messages[0], Does.Contain("unchanged"));
         Assert.That(logger.Messages[0], Does.Not.Contain("4111"));
+    }
+
+    // ---------- header logging ----------
+
+    [Test]
+    public async Task Invoke_AllowedHeader_IsLogged()
+    {
+        var (logger, middleware) = Build();
+
+        var context = new DefaultHttpContext();
+        context.Request.Path = "/api/items";
+        context.Request.Method = HttpMethods.Get;
+        context.Request.Headers["Content-Type"] = "application/json";
+
+        await middleware.Invoke(context);
+
+        Assert.That(logger.Messages.Any(m => m.Contains("Content-Type")), Is.True);
+    }
+
+    [Test]
+    public async Task Invoke_NonAllowedHeader_IsNotLogged()
+    {
+        var (logger, middleware) = Build();
+
+        var context = new DefaultHttpContext();
+        context.Request.Path = "/api/items";
+        context.Request.Method = HttpMethods.Get;
+        context.Request.Headers["X-Custom-Secret"] = "sensitive";
+
+        await middleware.Invoke(context);
+
+        Assert.That(logger.Messages.Any(m => m.Contains("X-Custom-Secret")), Is.False);
+        Assert.That(logger.Messages.Any(m => m.Contains("sensitive")), Is.False);
+    }
+
+    [Test]
+    public async Task Invoke_AllowedAndMaskedHeader_IsLoggedAsMasked()
+    {
+        var options = new FieldMaskingOptions();
+        options.AddAllowedHeaders("Authorization");
+        var (logger, middleware) = Build(options);
+
+        var context = new DefaultHttpContext();
+        context.Request.Path = "/api/items";
+        context.Request.Method = HttpMethods.Get;
+        context.Request.Headers["Authorization"] = "Bearer secret-token";
+
+        await middleware.Invoke(context);
+
+        Assert.That(logger.Messages.Any(m => m.Contains("***")), Is.True);
+        Assert.That(logger.Messages.Any(m => m.Contains("secret-token")), Is.False);
+    }
+
+    [Test]
+    public async Task Invoke_NoAllowedHeadersPresent_NoExtraLogLine()
+    {
+        var (logger, middleware) = Build();
+
+        var context = new DefaultHttpContext();
+        context.Request.Path = "/api/items";
+        context.Request.Method = HttpMethods.Get;
+
+        await middleware.Invoke(context);
+
+        // Only request + response log lines — no header line
+        Assert.That(logger.Messages, Has.Count.EqualTo(2));
     }
 
     // ---------- helpers ----------

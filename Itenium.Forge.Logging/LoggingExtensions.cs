@@ -30,7 +30,10 @@ public static class LoggingExtensions
         var loggingConfig = builder.Configuration.GetSection("ForgeConfiguration:Logging").Get<LoggingConfiguration>();
         var forgeSettings = builder.Configuration.GetSection("Forge").Get<ForgeSettings>();
 
-        ConfigureSerilog(builder, loggingConfig, forgeSettings);
+        var maskingOptions = new FieldMaskingOptions();
+        configureMasking?.Invoke(maskingOptions);
+
+        ConfigureSerilog(builder, loggingConfig, forgeSettings, maskingOptions);
 
         builder.Services.AddProblemDetails();
         builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
@@ -38,8 +41,6 @@ public static class LoggingExtensions
         builder.Services.AddTransient<TraceparentHandler>();
         builder.Services.ConfigureHttpClientDefaults(b => b.AddHttpMessageHandler<TraceparentHandler>());
 
-        var maskingOptions = new FieldMaskingOptions();
-        configureMasking?.Invoke(maskingOptions);
         builder.Services.AddSingleton(maskingOptions);
     }
 
@@ -85,7 +86,8 @@ public static class LoggingExtensions
     private static void ConfigureSerilog(
         WebApplicationBuilder builder,
         LoggingConfiguration? loggingConfig,
-        ForgeSettings? forgeSettings)
+        ForgeSettings? forgeSettings,
+        FieldMaskingOptions maskingOptions)
     {
         if (builder.Configuration.GetSection("Serilog").Exists())
         {
@@ -122,6 +124,7 @@ public static class LoggingExtensions
             lc.Enrich.WithMachineName();
             lc.Enrich.WithThreadId();
             lc.Enrich.With<ActivityEnricher>();
+            lc.Destructure.With(new ObjectMaskerDestructurePolicy(maskingOptions));
 
             // TODO: logging enrichment: UserId/Name
 

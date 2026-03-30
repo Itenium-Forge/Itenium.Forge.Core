@@ -53,6 +53,14 @@ public class RequestLoggingMiddleware
         var qs = request.Query.ToDictionary(q => q.Key, q => q.Value.ToString());
         qs = FieldMasker.MaskQueryParams(qs, _maskingOptions.MaskedFields);
 
+        var headers = request.Headers
+            .Where(h => _maskingOptions.AllowedHeaders.Contains(h.Key))
+            .ToDictionary(h => h.Key, h => h.Value.ToString());
+        headers = FieldMasker.MaskHeaders(headers, _maskingOptions.MaskedHeaders);
+
+        if (headers.Count > 0)
+            _logger.LogInformation("{Method} {Path} - Headers: {@Headers}", request.Method, request.Path, headers);
+
         if (qs.Count > 0 && body.Length > 0)
         {
             _logger.LogInformation("{Method} {Path} - Query: {@Query}, Body: {Body}", request.Method, request.Path, qs, body);

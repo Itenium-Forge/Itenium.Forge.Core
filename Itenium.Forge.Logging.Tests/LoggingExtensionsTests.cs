@@ -271,7 +271,7 @@ public class LoggingExtensionsTests
     {
         var builder = WebApplication.CreateBuilder();
         builder.AddForgeSettings<AppSettings>();
-        builder.AddForgeLogging(options => options.AddFields("credit_card"));
+        builder.AddForgeLogging(options => options.AddMaskedFields("credit_card"));
 
         var descriptor = builder.Services
             .SingleOrDefault(sd => sd.ServiceType == typeof(FieldMaskingOptions));
