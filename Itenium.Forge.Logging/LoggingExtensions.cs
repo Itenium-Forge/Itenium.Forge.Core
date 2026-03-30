@@ -20,18 +20,28 @@ public static class LoggingExtensions
     /// For OpenTelemetry tracing and metrics call <c>AddForgeTelemetry()</c> from
     /// the <c>Itenium.Forge.Telemetry</c> package.
     /// </summary>
-    public static void AddForgeLogging(this WebApplicationBuilder builder)
+    /// <param name="builder">The web application builder.</param>
+    /// <param name="configureMasking">
+    /// Optional delegate to configure which fields are masked in request logs.
+    /// When <c>null</c>, the <see cref="FieldMaskingOptions.DefaultFields"/> are used.
+    /// </param>
+    public static void AddForgeLogging(this WebApplicationBuilder builder, Action<FieldMaskingOptions>? configureMasking = null)
     {
         var loggingConfig = builder.Configuration.GetSection("ForgeConfiguration:Logging").Get<LoggingConfiguration>();
         var forgeSettings = builder.Configuration.GetSection("Forge").Get<ForgeSettings>();
 
-        ConfigureSerilog(builder, loggingConfig, forgeSettings);
+        var maskingOptions = new FieldMaskingOptions();
+        configureMasking?.Invoke(maskingOptions);
+
+        ConfigureSerilog(builder, loggingConfig, forgeSettings, maskingOptions);
 
         builder.Services.AddProblemDetails();
         builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 
         builder.Services.AddTransient<TraceparentHandler>();
         builder.Services.ConfigureHttpClientDefaults(b => b.AddHttpMessageHandler<TraceparentHandler>());
+
+        builder.Services.AddSingleton(maskingOptions);
     }
 
     /// <summary>
@@ -76,7 +86,8 @@ public static class LoggingExtensions
     private static void ConfigureSerilog(
         WebApplicationBuilder builder,
         LoggingConfiguration? loggingConfig,
-        ForgeSettings? forgeSettings)
+        ForgeSettings? forgeSettings,
+        FieldMaskingOptions maskingOptions)
     {
         if (builder.Configuration.GetSection("Serilog").Exists())
         {
@@ -113,6 +124,7 @@ public static class LoggingExtensions
             lc.Enrich.WithMachineName();
             lc.Enrich.WithThreadId();
             lc.Enrich.With<ActivityEnricher>();
+            lc.Destructure.With(new ObjectMaskerDestructurePolicy(maskingOptions, services));
 
             // TODO: logging enrichment: UserId/Name
 

@@ -27,10 +27,10 @@
 | A3 | Security Headers middleware | S | 4 | Lo | 🟢 | — |
 | A4 | API versioning (`Asp.Versioning.Mvc`) | S | 4 | Lo | ⭕ | Controllers, Swagger |
 | A5 | Rate limiting (`Microsoft.AspNetCore.RateLimiting`) | M | 4 | Lo | ⭕ | A1 |
-| A6 | `IForgePagedResult<T>` + pagination contracts | S | 5 | Med | ⭕ | — |
+| A6 | `IForgePagedResult<T>` + pagination contracts | S | 5 | Med | 🟢 | — |
 | A7 | Response compression | S | 2 | Lo | 🟢 | Controllers |
 | A8 | Local developer overrides (`appsettings.Local.json`) | S | 3 | Lo | 🟢 | Settings |
-| A9 | Request/response logging field masking | S | 3 | Lo | ⭕ | Logging |
+| A9 | Request/response logging field masking | S | 3 | Lo | 🟢 | Logging |
 | **Phase B — Data & Messaging** | | | | | | |
 | B1 | DbContext registration helper | M | 5 | Med | ⭕ | A2 |
 | B2 | EF audit interceptor (`IAuditable`, `AuditInfo`) | M | 5 | Med | ⭕ | B1, Security Core |

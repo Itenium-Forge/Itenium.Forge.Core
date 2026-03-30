@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Http;
 using System.Diagnostics;
-using System.Text.Json;
 using Microsoft.Extensions.Logging;
 
 namespace Itenium.Forge.Logging;
@@ -9,16 +8,23 @@ namespace Itenium.Forge.Logging;
 /// We're not using the <see cref="Serilog.AspNetCore.RequestLoggingMiddleware"/>.
 /// This one logs everything as Information including QueryString and Body.
 /// Logs before and after the request.
+/// Sensitive field values in JSON bodies and query-string parameters are replaced
+/// with <c>***</c> according to <see cref="FieldMaskingOptions"/>.
 /// </summary>
 public class RequestLoggingMiddleware
 {
     private readonly RequestDelegate _next;
     private readonly ILogger<RequestLoggingMiddleware> _logger;
+    private readonly FieldMaskingOptions _maskingOptions;
 
-    public RequestLoggingMiddleware(RequestDelegate next, ILogger<RequestLoggingMiddleware> logger)
+    public RequestLoggingMiddleware(
+        RequestDelegate next,
+        ILogger<RequestLoggingMiddleware> logger,
+        FieldMaskingOptions maskingOptions)
     {
         _next = next;
         _logger = logger;
+        _maskingOptions = maskingOptions;
     }
 
     public async Task Invoke(HttpContext context)
@@ -40,11 +46,20 @@ public class RequestLoggingMiddleware
             using var reader = new StreamReader(request.Body, leaveOpen: true);
             body = await reader.ReadToEndAsync();
             request.Body.Position = 0;
+
+            body = FieldMasker.MaskJsonBody(body, _maskingOptions.MaskedFields);
         }
 
         var qs = request.Query.ToDictionary(q => q.Key, q => q.Value.ToString());
-        // TODO: check serialization of QueryString
-        // var queryParams = JsonSerializer.Serialize(qs);
+        qs = FieldMasker.MaskQueryParams(qs, _maskingOptions.MaskedFields);
+
+        var headers = request.Headers
+            .Where(h => _maskingOptions.AllowedHeaders.Contains(h.Key))
+            .ToDictionary(h => h.Key, h => h.Value.ToString());
+        headers = FieldMasker.MaskHeaders(headers, _maskingOptions.MaskedHeaders);
+
+        if (headers.Count > 0)
+            _logger.LogInformation("{Method} {Path} - Headers: {@Headers}", request.Method, request.Path, headers);
 
         if (qs.Count > 0 && body.Length > 0)
         {

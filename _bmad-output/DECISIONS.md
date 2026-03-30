@@ -6,6 +6,32 @@ Each entry follows the ADR format: **Context** (why we faced this choice), **Dec
 
 ---
 
+## ADR-005 — Sensitive field masking: two-layer approach with opt-in header logging
+
+- **Date:** 2026-03-30
+- **Status:** Accepted
+- **Branch/Story:** A9 — Request/response logging field masking
+
+### Context
+
+Three non-obvious design decisions were made that are not derivable from reading the code or README.
+
+### Decision
+
+**Two masking layers share one config.** The HTTP layer (raw JSON body + query string) and the model layer (Serilog destructuring via `ObjectMaskerDestructurePolicy`) both read from the same `FieldMaskingOptions` singleton. A field added to `MaskedFields` is automatically masked at both layers without extra configuration.
+
+**Header logging uses an allowlist, not a blocklist.** Logging all headers and masking the sensitive ones risks leaking a credential if a new sensitive header is added without updating the mask list. An allowlist (`AllowedHeaders`) means unrecognised headers are silently skipped — safe by default.
+
+**`IObjectMasker<T>` uses expressions, not attributes.** Attribute-based masking requires reflection per log call. Expression-based masking compiles once per type and is cached, making the per-call cost negligible. It also gives compile-time safety on property names.
+
+### Consequences
+
+- Non-JSON bodies are logged as-is — no masking, no silent data loss.
+- Response body masking is out of scope.
+- Nested type masking requires each type to implement `IObjectMasker<T>` independently.
+
+---
+
 ## ADR-004 — Local developer overrides use `appsettings.Local.json`, never machine name
 
 - **Date:** 2026-03-25
