@@ -47,16 +47,7 @@ internal static class FieldMasker
     public static Dictionary<string, string> MaskQueryParams(
         Dictionary<string, string> query,
         IReadOnlySet<string> maskedFields)
-    {
-        if (maskedFields.Count == 0)
-            return query;
-
-        var result = new Dictionary<string, string>(query.Count, StringComparer.OrdinalIgnoreCase);
-        foreach (var (key, value) in query)
-            result[key] = maskedFields.Contains(key) ? MaskValue : value;
-
-        return result;
-    }
+        => MaskDictionary(query, maskedFields);
 
     /// <summary>
     /// Returns a dictionary with values replaced by <c>***</c> for header names that match
@@ -66,13 +57,18 @@ internal static class FieldMasker
     public static Dictionary<string, string> MaskHeaders(
         Dictionary<string, string> headers,
         IReadOnlySet<string> maskedHeaderFields)
-    {
-        if (maskedHeaderFields.Count == 0)
-            return headers;
+        => MaskDictionary(headers, maskedHeaderFields);
 
-        var result = new Dictionary<string, string>(headers.Count, StringComparer.OrdinalIgnoreCase);
-        foreach (var (key, value) in headers)
-            result[key] = maskedHeaderFields.Contains(key) ? MaskValue : value;
+    private static Dictionary<string, string> MaskDictionary(
+        Dictionary<string, string> source,
+        IReadOnlySet<string> maskedKeys)
+    {
+        if (maskedKeys.Count == 0)
+            return source;
+
+        var result = new Dictionary<string, string>(source.Count, StringComparer.OrdinalIgnoreCase);
+        foreach (var (key, value) in source)
+            result[key] = maskedKeys.Contains(key) ? MaskValue : value;
 
         return result;
     }

@@ -7,11 +7,17 @@ namespace Itenium.Forge.Logging.Tests;
 [TestFixture]
 public class ObjectMaskerDestructurePolicyTests
 {
-    private static ObjectMaskerDestructurePolicy Build(Action<FieldMaskingOptions>? configure = null)
+    private static ObjectMaskerDestructurePolicy Build(
+        Action<FieldMaskingOptions>? configure = null,
+        Action<SimpleServiceProvider>? registerMaskers = null)
     {
         var options = new FieldMaskingOptions();
         configure?.Invoke(options);
-        return new ObjectMaskerDestructurePolicy(options);
+
+        var sp = new SimpleServiceProvider();
+        registerMaskers?.Invoke(sp);
+
+        return new ObjectMaskerDestructurePolicy(options, sp);
     }
 
     private static Dictionary<string, object?> Destructure(ObjectMaskerDestructurePolicy policy, object value)
@@ -57,50 +63,69 @@ public class ObjectMaskerDestructurePolicyTests
         Assert.That(props["Name"], Is.EqualTo("Alice"));
     }
 
-    // ---------- IObjectMasker<T> ----------
+    // ---------- IObjectMasker<T> via DI ----------
 
     [Test]
-    public void TryDestructure_IObjectMaskerField_IsMasked()
+    public void TryDestructure_RegisteredMasker_MasksSpecifiedFields()
     {
-        var policy = Build();
-        var props = Destructure(policy, new SensitiveModel { Name = "Alice", Address = "123 Street" });
+        var policy = Build(registerMaskers: sp =>
+            sp.Register<IObjectMasker<UserProfile>>(new UserProfileMasker()));
+
+        var props = Destructure(policy, new UserProfile { Name = "Alice", Address = "123 Street" });
         Assert.That(props["Name"], Is.EqualTo("***"));
         Assert.That(props["Address"], Is.EqualTo("***"));
     }
 
     [Test]
-    public void TryDestructure_IObjectMasker_NonMaskedField_IsLogged()
+    public void TryDestructure_RegisteredMasker_NonMaskedField_IsLogged()
     {
-        var policy = Build();
-        var props = Destructure(policy, new SensitiveModel { Name = "Alice", Email = "alice@example.com" });
+        var policy = Build(registerMaskers: sp =>
+            sp.Register<IObjectMasker<UserProfile>>(new UserProfileMasker()));
+
+        var props = Destructure(policy, new UserProfile { Email = "alice@example.com" });
         Assert.That(props["Email"], Is.EqualTo("alice@example.com"));
     }
 
     // ---------- combined ----------
 
     [Test]
-    public void TryDestructure_BothBlocklistAndIObjectMasker_BothMasked()
+    public void TryDestructure_BothBlocklistAndRegisteredMasker_BothMasked()
     {
-        var policy = Build();
-        var props = Destructure(policy, new SensitiveModel { Name = "Alice", Password = "s3cret" });
+        var policy = Build(registerMaskers: sp =>
+            sp.Register<IObjectMasker<UserProfile>>(new UserProfileMasker()));
+
+        var props = Destructure(policy, new UserProfile { Name = "Alice", Password = "s3cret" });
         Assert.That(props["Name"], Is.EqualTo("***"));      // IObjectMasker<T>
         Assert.That(props["Password"], Is.EqualTo("***"));  // blocklist
     }
 
     // ---------- helpers ----------
 
-    private class SensitiveModel : IObjectMasker<SensitiveModel>
+    private class UserProfile
     {
         public string? Name { get; set; }
         public string? Address { get; set; }
         public string? Email { get; set; }
         public string? Password { get; set; }
+    }
 
-        public IEnumerable<Expression<Func<SensitiveModel, object>>> GetMaskedFields()
+    private class UserProfileMasker : IObjectMasker<UserProfile>
+    {
+        public IEnumerable<Expression<Func<UserProfile, object>>> GetMaskedFields()
         {
             yield return obj => obj.Name!;
             yield return obj => obj.Address!;
         }
+    }
+
+    internal class SimpleServiceProvider : IServiceProvider
+    {
+        private readonly Dictionary<Type, object> _services = new();
+
+        public void Register<T>(T instance) where T : class => _services[typeof(T)] = instance;
+
+        public object? GetService(Type serviceType)
+            => _services.TryGetValue(serviceType, out var service) ? service : null;
     }
 
     private class SimpleFactory : ILogEventPropertyValueFactory

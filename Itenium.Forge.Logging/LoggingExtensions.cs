@@ -124,7 +124,7 @@ public static class LoggingExtensions
             lc.Enrich.WithMachineName();
             lc.Enrich.WithThreadId();
             lc.Enrich.With<ActivityEnricher>();
-            lc.Destructure.With(new ObjectMaskerDestructurePolicy(maskingOptions));
+            lc.Destructure.With(new ObjectMaskerDestructurePolicy(maskingOptions, services));
 
             // TODO: logging enrichment: UserId/Name
 

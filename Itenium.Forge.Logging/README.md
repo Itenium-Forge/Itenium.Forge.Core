@@ -91,21 +91,22 @@ When an object is logged directly with `_logger.LogInformation("{@obj}", obj)`, 
 body/query blocklist is applied automatically via a Serilog destructure policy.
 
 For fields that are sensitive only on a specific type (e.g. GDPR fields like `Name` or
-`Address` that are not universally sensitive), implement `IObjectMasker<T>` on the model:
+`Address` that are not universally sensitive), create a dedicated masker class and register it
+in DI. Keep the masker separate from the model to avoid polluting the domain layer with logging concerns.
 
 ```csharp
-public class UserProfile : IObjectMasker<UserProfile>
+// Dedicated masker class — domain model stays clean
+public class UserProfileMasker : IObjectMasker<UserProfile>
 {
-    public string Name { get; set; }
-    public string Address { get; set; }
-    public string Email { get; set; }
-
     public IEnumerable<Expression<Func<UserProfile, object>>> GetMaskedFields()
     {
         yield return obj => obj.Name;
         yield return obj => obj.Address;
     }
 }
+
+// Registration
+services.AddSingleton<IObjectMasker<UserProfile>, UserProfileMasker>();
 ```
 
 ### When to use which

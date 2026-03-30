@@ -5,23 +5,24 @@ namespace Itenium.Forge.Logging;
 /// <summary>
 /// Declares which properties of <typeparamref name="T"/> should be masked when the object
 /// is logged via Serilog destructuring (<c>{@obj}</c>).
-/// Implement this interface on model classes that contain fields that are sensitive only
-/// for that specific type — for example GDPR fields such as <c>Name</c> or <c>Address</c>
-/// that are not in the global <see cref="FieldMaskingOptions.MaskedFields"/> blocklist.
+/// Implement this interface on a dedicated masker class — not on the model itself — to keep
+/// logging concerns out of the domain layer. Register the masker in DI so the
+/// <c>ObjectMaskerDestructurePolicy</c> can resolve it automatically.
 /// </summary>
 /// <example>
 /// <code>
-/// public class UserProfile : IObjectMasker&lt;UserProfile&gt;
+/// // Separate masker class — keeps the domain model clean
+/// public class UserProfileMasker : IObjectMasker&lt;UserProfile&gt;
 /// {
-///     public string Name { get; set; }
-///     public string Address { get; set; }
-///
 ///     public IEnumerable&lt;Expression&lt;Func&lt;UserProfile, object&gt;&gt;&gt; GetMaskedFields()
 ///     {
 ///         yield return obj => obj.Name;
 ///         yield return obj => obj.Address;
 ///     }
 /// }
+///
+/// // Registration
+/// services.AddSingleton&lt;IObjectMasker&lt;UserProfile&gt;, UserProfileMasker&gt;();
 /// </code>
 /// </example>
 public interface IObjectMasker<T>

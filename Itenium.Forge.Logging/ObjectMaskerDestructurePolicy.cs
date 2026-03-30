@@ -1,3 +1,4 @@
+using Microsoft.Extensions.DependencyInjection;
 using Serilog.Core;
 using Serilog.Events;
 using System.Collections.Concurrent;
@@ -11,7 +12,7 @@ namespace Itenium.Forge.Logging;
 /// with <c>{@obj}</c>. Masking is applied from two sources:
 /// <list type="bullet">
 ///   <item><see cref="FieldMaskingOptions.MaskedFields"/> — global name-based blocklist applied to all types.</item>
-///   <item><see cref="IObjectMasker{T}"/> — type-specific field selector implemented on the model class.</item>
+///   <item><see cref="IObjectMasker{T}"/> — type-specific field selector registered in DI.</item>
 /// </list>
 /// Property name matching is case-insensitive. Masked values are replaced with <c>***</c>.
 /// Type reflection is performed once per type and cached.
@@ -19,15 +20,20 @@ namespace Itenium.Forge.Logging;
 internal class ObjectMaskerDestructurePolicy : IDestructuringPolicy
 {
     private readonly FieldMaskingOptions _options;
+    private readonly IServiceProvider _services;
     // null = type has no masked properties, string[] = property names to mask
     private readonly ConcurrentDictionary<Type, string[]?> _cache = new();
 
-    public ObjectMaskerDestructurePolicy(FieldMaskingOptions options) => _options = options;
+    public ObjectMaskerDestructurePolicy(FieldMaskingOptions options, IServiceProvider services)
+    {
+        _options = options;
+        _services = services;
+    }
 
     public bool TryDestructure(object value, ILogEventPropertyValueFactory factory, out LogEventPropertyValue result)
     {
         var type = value.GetType();
-        var maskedNames = _cache.GetOrAdd(type, t => ResolveMaskedNames(t, value));
+        var maskedNames = _cache.GetOrAdd(type, ResolveMaskedNames);
 
         if (maskedNames is null)
         {
@@ -47,7 +53,7 @@ internal class ObjectMaskerDestructurePolicy : IDestructuringPolicy
         return true;
     }
 
-    private string[]? ResolveMaskedNames(Type type, object instance)
+    private string[]? ResolveMaskedNames(Type type)
     {
         var names = new List<string>();
 
@@ -56,12 +62,13 @@ internal class ObjectMaskerDestructurePolicy : IDestructuringPolicy
             if (_options.MaskedFields.Contains(p.Name))
                 names.Add(p.Name);
 
-        // Type-specific fields from IObjectMasker<T>
+        // Type-specific fields from registered IObjectMasker<T>
         var maskerType = typeof(IObjectMasker<>).MakeGenericType(type);
-        if (maskerType.IsAssignableFrom(type))
+        var masker = _services.GetService(maskerType);
+        if (masker != null)
         {
             var method = maskerType.GetMethod("GetMaskedFields")!;
-            var expressions = (IEnumerable<LambdaExpression>)method.Invoke(instance, null)!;
+            var expressions = (IEnumerable<LambdaExpression>)method.Invoke(masker, null)!;
             foreach (var expr in expressions)
                 names.Add(GetMemberName(expr.Body));
         }

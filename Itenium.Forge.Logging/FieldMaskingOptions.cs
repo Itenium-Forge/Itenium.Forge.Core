@@ -20,7 +20,12 @@ public sealed class FieldMaskingOptions
         "refresh_token"
     };
 
-    /// <summary>Header names masked when no custom configuration is provided.</summary>
+    /// <summary>Header names masked with <c>***</c> when logged.</summary>
+    /// <remarks>
+    /// A header must also appear in <see cref="DefaultAllowedHeaders"/> to be logged at all.
+    /// Being in this list alone does not cause a header to appear in logs — it only controls
+    /// how the value is shown when the header is already allowed.
+    /// </remarks>
     public static readonly IReadOnlySet<string> DefaultMaskedHeaders = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
     {
         "Authorization",
@@ -31,7 +36,8 @@ public sealed class FieldMaskingOptions
 
     /// <summary>
     /// Headers that will be logged when no custom configuration is provided.
-    /// Only headers in this set are logged; all others are silently skipped.
+    /// Only headers in this set appear in logs; all others are silently skipped.
+    /// Headers that are also in <see cref="DefaultMaskedHeaders"/> are logged as <c>***</c>.
     /// </summary>
     public static readonly IReadOnlySet<string> DefaultAllowedHeaders = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
     {
