@@ -1,0 +1,14 @@
+is_global = true
+global_level = 0
+
+# ── Enforced profile: triaged rules ──────────────────────────────────────────
+# Only explicit triage decisions live here.
+# Rules not listed use the analyzer's default severity.
+# Phase 2 (follow-up D1 story): promote critical/security rules to warning.
+
+# ── False positives: permanently silenced ────────────────────────────────────
+dotnet_diagnostic.MA0004.severity = none         # ConfigureAwait — no SynchronizationContext in ASP.NET Core
+dotnet_diagnostic.MA0026.severity = none         # Duplicate of S1135
+dotnet_diagnostic.S2094.severity  = none         # Empty class intentional (private Startup {})
+dotnet_diagnostic.S2344.severity  = none         # Intentional naming convention
+dotnet_diagnostic.S6968.severity  = none         # ConfigureAwait — no SynchronizationContext in ASP.NET Core

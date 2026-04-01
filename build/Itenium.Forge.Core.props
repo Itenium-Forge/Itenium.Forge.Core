@@ -1,0 +1,9 @@
+<Project>
+
+  <!-- Activate Forge analyzer defaults for all consuming projects.
+       Override individual rules by creating your own .globalconfig with global_level = 1. -->
+  <ItemGroup>
+    <GlobalAnalyzerConfigFiles Include="$(MSBuildThisFileDirectory)forge-analyzers.globalconfig" />
+  </ItemGroup>
+
+</Project>
