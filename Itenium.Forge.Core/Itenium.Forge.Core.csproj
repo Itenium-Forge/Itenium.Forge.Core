@@ -9,6 +9,23 @@
 
   <ItemGroup>
     <None Include=".\README.md" Pack="true" PackagePath="" />
+    <None Include="..\build\Itenium.Forge.Core.props" Pack="true" PackagePath="build\" />
+    <None Include="..\build\forge-analyzers.globalconfig" Pack="true" PackagePath="build\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers">
+      <IncludeAssets>analyzers;build;buildtransitive</IncludeAssets>
+      <PrivateAssets>none</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="Meziantou.Analyzer">
+      <IncludeAssets>analyzers;build;buildtransitive</IncludeAssets>
+      <PrivateAssets>none</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="SonarAnalyzer.CSharp">
+      <IncludeAssets>analyzers;build;buildtransitive</IncludeAssets>
+      <PrivateAssets>none</PrivateAssets>
+    </PackageReference>
   </ItemGroup>
 
 </Project>

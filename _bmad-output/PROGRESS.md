@@ -23,7 +23,7 @@
 | — | Security — OpenIddict identity server | L | 5 | Hi | 🟢 | Security Core |
 | **Phase A — Chassis Foundation** | | | | | | |
 | A1 | Correlation ID — W3C traceparent propagation | S | 5 | Lo | 🟢 | Logging |
-| A2 | Startup config validation (`ValidateOnStart()`) | S | 4 | Lo | ⭕ | Settings |
+| A2 | Startup config validation (`ValidateOnStart()`) | S | 4 | Lo | 🟢 | Settings |
 | A3 | Security Headers middleware | S | 4 | Lo | 🟢 | — |
 | A4 | API versioning (`Asp.Versioning.Mvc`) | S | 4 | Lo | ⭕ | Controllers, Swagger |
 | A5 | Rate limiting (`Microsoft.AspNetCore.RateLimiting`) | M | 4 | Lo | ⭕ | A1 |
@@ -58,7 +58,7 @@
 | C8 | Config debug endpoint (dev-only, secrets masked) | S | 2 | Lo | ⭕ | Settings |
 | C9 | Config gap detection (startup warnings) | M | 3 | Med | ⭕ | — |
 | **Phase D — Developer Experience** | | | | | | |
-| D1 | EditorConfig + Roslyn analyzers | M | 4 | Lo | ⭕ | — |
+| D1 | EditorConfig + Roslyn analyzers | M | 4 | Lo | 🟡 Phase 1 done · Phase 2 pending | — |
 | D2 | `ForgeWebApplicationFactory` (test helper) | M | 5 | Lo | ⭕ | B1, Security Core |
 | D3 | Authenticated HttpClient test helper | S | 4 | Lo | ⭕ | D2, Security Core |
 | D4 | Test data builders (Forge types) | S | 2 | Lo | ⭕ | D2 |
