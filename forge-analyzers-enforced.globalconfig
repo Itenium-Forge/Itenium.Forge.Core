@@ -4,7 +4,6 @@ global_level = 0
 # ── Enforced profile: triaged rules ──────────────────────────────────────────
 # Only explicit triage decisions live here.
 # Rules not listed use the analyzer's default severity.
-# Phase 2 (follow-up D1 story): promote critical/security rules to warning.
 
 # ── False positives: permanently silenced ────────────────────────────────────
 dotnet_diagnostic.MA0004.severity = none         # ConfigureAwait — no SynchronizationContext in ASP.NET Core
@@ -12,3 +11,41 @@ dotnet_diagnostic.MA0026.severity = none         # Duplicate of S1135
 dotnet_diagnostic.S2094.severity  = none         # Empty class intentional (private Startup {})
 dotnet_diagnostic.S2344.severity  = none         # Intentional naming convention
 dotnet_diagnostic.S6968.severity  = none         # ConfigureAwait — no SynchronizationContext in ASP.NET Core
+dotnet_diagnostic.CA1707.severity = none         # NUnit Method_When_Then naming convention — not a production code concern
+dotnet_diagnostic.CA2007.severity = none         # ConfigureAwait — no SynchronizationContext in ASP.NET Core (CA variant)
+dotnet_diagnostic.CA1812.severity = none         # Middleware registered via DI — analyzer cannot see reflection-based instantiation
+dotnet_diagnostic.CA1805.severity = none         # Explicit default value initialization — intentional clarity, not a bug
+
+# ── Warnings: real issues that should be fixed ────────────────────────────────
+dotnet_diagnostic.CA1310.severity = warning      # StartsWith/Contains without StringComparison — culture-sensitive path matching is a real bug risk
+dotnet_diagnostic.CA1304.severity = warning      # ToLower/ToUpper without CultureInfo — locale risk on security-sensitive role/claim strings
+dotnet_diagnostic.CA1311.severity = warning      # String case conversion without culture — same family as CA1304, affects OpenIddict role handling
+dotnet_diagnostic.CA2201.severity = warning      # throw new Exception() — callers cannot catch it specifically; use a concrete type
+dotnet_diagnostic.S112.severity   = warning      # throw new Exception() — SonarAnalyzer duplicate of CA2201
+dotnet_diagnostic.CA2000.severity = suggestion   # Mostly test fake HttpClient setup; real Activity leak in CorrelationIdMiddleware still visible
+dotnet_diagnostic.S927.severity   = warning      # Parameter name doesn't match interface declaration — misleading API contract
+dotnet_diagnostic.MA0015.severity = warning      # ArgumentException without parameter name — callers can't tell which param was invalid
+
+# ── Suggestions: valid but not build-breaking ─────────────────────────────────
+dotnet_diagnostic.CA1062.severity = suggestion   # Null checks on extension methods — framework/DI guarantees non-null; nullable already covers call sites
+dotnet_diagnostic.CA1848.severity = suggestion   # Use LoggerMessage delegates — perf improvement, not a correctness issue
+dotnet_diagnostic.CA1873.severity = suggestion   # Avoid string allocation in log calls — perf improvement, not a correctness issue
+dotnet_diagnostic.MA0006.severity = suggestion   # Use string.Equals — low locale risk in internal config comparisons
+dotnet_diagnostic.CA1031.severity = suggestion   # Catch more specific exception — intentional catch-all in health checks and parser
+dotnet_diagnostic.MA0002.severity = suggestion   # Use IEqualityComparer<T> overload — low risk in config key lookups
+dotnet_diagnostic.CA1305.severity = suggestion   # Specify IFormatProvider — Serilog sinks, inconsistent log formatting across environments
+dotnet_diagnostic.CA2234.severity = suggestion   # Pass Uri instead of string — endpoints validated at startup, low real-world risk
+dotnet_diagnostic.CA1852.severity = suggestion   # Seal internal types — minor JIT devirtualization gain
+dotnet_diagnostic.S3260.severity  = suggestion   # Seal private classes — same as CA1852 for private types
+dotnet_diagnostic.CA1515.severity = suggestion   # Make public types internal in executables — only affects ExampleApp
+dotnet_diagnostic.CA1819.severity = suggestion   # Property returns array — should return IReadOnlyList<T>, real API concern but low immediate risk
+dotnet_diagnostic.CA1711.severity = suggestion   # Type name ends in reserved suffix — PathPolicyCollection doesn't implement ICollection
+dotnet_diagnostic.S3267.severity  = suggestion   # Simplify loop with LINQ Where — style only
+dotnet_diagnostic.MA0074.severity = suggestion   # StartsWith without StringComparison — overlaps CA1310, different call sites
+dotnet_diagnostic.CA1861.severity = suggestion   # Constant arrays as arguments — use static readonly, minor alloc saving
+dotnet_diagnostic.CA1860.severity = suggestion   # Prefer Length > 0 over Any() — trivial perf, trivial fix
+dotnet_diagnostic.MA0051.severity = suggestion   # Method too long — subjective, style concern only
+dotnet_diagnostic.S1135.severity  = suggestion   # TODO comment — informational, not a build concern
+dotnet_diagnostic.CA1859.severity = suggestion   # Use concrete return type — test-only, minor perf gain
+dotnet_diagnostic.CA2227.severity = suggestion   # Collection property has setter — intentional for config POCOs
+dotnet_diagnostic.CA1845.severity = suggestion   # Use AsSpan instead of Substring — minor alloc perf improvement
