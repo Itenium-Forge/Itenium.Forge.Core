@@ -16,6 +16,17 @@ See [nuget credentials](https://github.com/dotnet/dotnet-docker/blob/main/docume
 
 See [DECISIONS.md](./DECISIONS.md) for the architectural decision log.
 
+## Code Quality
+
+Forge ships a default [`.editorconfig`](./.editorconfig) based on the `dotnet new editorconfig` baseline.
+It defines C# formatting and style preferences (indentation, braces, `var` usage, naming conventions, etc.)
+and serves as the **reference standard** for all Forge-based projects.
+
+Consuming apps are encouraged to copy it as a starting point. The file contains no severity settings —
+all enforcement decisions live in the analyzer globalconfigs shipped with `Itenium.Forge.Core`.
+
+See [Itenium.Forge.Core](./Itenium.Forge.Core/README.md) for analyzer setup and `EnforceForgeRules` opt-in.
+
 ## Packages
 
 - [Itenium.Forge.Core](./Itenium.Forge.Core/README.md)
