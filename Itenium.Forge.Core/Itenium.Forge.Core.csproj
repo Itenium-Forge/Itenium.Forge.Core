@@ -14,6 +14,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers">
+      <IncludeAssets>analyzers;build;buildtransitive</IncludeAssets>
+      <PrivateAssets>none</PrivateAssets>
+    </PackageReference>
     <PackageReference Include="Meziantou.Analyzer">
       <IncludeAssets>analyzers;build;buildtransitive</IncludeAssets>
       <PrivateAssets>none</PrivateAssets>
