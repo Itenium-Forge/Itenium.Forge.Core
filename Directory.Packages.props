@@ -51,6 +51,10 @@
     <PackageVersion Include="SonarAnalyzer.CSharp" Version="10.22.0.136894" />
   </ItemGroup>
 
+  <ItemGroup Label="Refit">
+    <PackageVersion Include="Refit.HttpClientFactory" Version="10.1.6" />
+  </ItemGroup>
+
   <ItemGroup Label="Testing">
     <PackageVersion Include="coverlet.collector" Version="6.0.4" />
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.0.1" />

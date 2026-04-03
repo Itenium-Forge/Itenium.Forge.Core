@@ -35,6 +35,14 @@ builder.AddForgeHealthChecks()
 Use the `live` tag for checks that should run on the liveness endpoint,
 and the `ready` tag for checks that should run on the readiness endpoint.
 
+`AddForgeHttpClient<T>("MyService")` (from `Itenium.Forge.HttpClient`) automatically
+registers a readiness check named `http-MyService`. To exclude a check — for example in tests:
+
+```cs
+services.Configure<HealthCheckServiceOptions>(opts =>
+    opts.Registrations.RemoveAll(r => r.Name == "http-MyService"));
+```
+
 ## Response Format
 
 ```json
