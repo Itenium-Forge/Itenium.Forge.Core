@@ -35,12 +35,12 @@ public class ExampleAppFactory : WebApplicationFactory<Program>
             // Remove external health checks — these endpoints aren't available in tests
             RemoveHealthCheck(services, "loki");
             RemoveHealthCheck(services, "otlp");
+            RemoveHealthCheck(services, "http-ExampleCoachingService");
         });
     }
 
     private static void RemoveHealthCheck(IServiceCollection services, string name)
     {
-        // Use PostConfigure to remove after all other configurations have run
         services.PostConfigure<HealthCheckServiceOptions>(options =>
         {
             var registration = options.Registrations.FirstOrDefault(r => r.Name == name);
