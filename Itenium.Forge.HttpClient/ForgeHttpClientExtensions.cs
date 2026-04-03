@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
@@ -38,7 +39,8 @@ public static class ForgeHttpClientExtensions
                 var entry = ResolveEntry(sp, name);
                 client.BaseAddress = new Uri(entry.BaseUrl);
                 client.Timeout = TimeSpan.FromSeconds(entry.TimeoutSeconds);
-            });
+            })
+            .AddHttpMessageHandler<ForwardedAuthorizationHandler>();
     }
 
     private static HttpClientEntryOptions ResolveEntry(IServiceProvider sp, string name)
@@ -59,6 +61,8 @@ public static class ForgeHttpClientExtensions
             return;
 
         services.TryAddSingleton<HttpClientsOptionsRegistered>();
+        services.AddHttpContextAccessor();
+        services.TryAddTransient<ForwardedAuthorizationHandler>();
 
         services
             .AddOptions<HttpClientsOptions>()

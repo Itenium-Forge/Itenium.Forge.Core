@@ -8,8 +8,9 @@ dotnet add package Itenium.Forge.HttpClient
 Configures typed Refit clients with Forge defaults:
 - **BaseUrl** resolved per environment via `appsettings.{Environment}.json`
 - **traceparent** header propagated automatically (via `AddForgeLogging`)
-- **Health check** auto-registered per client, tagged `ready`
-- **ValidateOnStart** — startup crashes if `BaseUrl` is missing or malformed
+- **Bearer token forwarded** automatically from the inbound request to the downstream call
+- **Health check** auto-registered per client, named `http-{name}`, tagged `ready`
+- **ValidateOnStart** — startup crashes if any config property fails validation (`BaseUrl` missing/malformed, `TimeoutSeconds` out of range)
 
 ## Usage
 
@@ -47,21 +48,23 @@ builder.AddForgeHttpClient<IMyServiceClient>("MyService");
 
 ## Service-to-service authentication
 
-`AddForgeHttpClient<T>()` sends **no credentials** to the downstream service. This is fine while the downstream service is open, but any Forge service that calls `RequireAuthenticatedByDefault()` will reject the call with **401 Unauthorized**.
+`AddForgeHttpClient<T>()` automatically forwards the inbound `Authorization: Bearer` token to every outgoing request via `ForwardedAuthorizationHandler`. The downstream service sees the original caller's identity.
 
-Two standard patterns exist; neither is implemented yet (tracked as B8):
+**Limitations of token forwarding:**
+- No inbound HTTP context (background jobs, `IHostedService`) → no token is forwarded
+- Audiences must overlap; a strict JWT validator will reject a token not issued for the downstream audience
 
-**Token forwarding (on-behalf-of)** — forward the inbound user Bearer token downstream:
-- Downstream sees the *user's* identity; useful when it enforces per-user permissions
-- Does not work for background jobs or scheduled tasks (no inbound HTTP context)
-- Requires audiences to overlap, otherwise strict JWT validation rejects the token
+Client credentials (service-to-service without a user context) are not yet implemented (tracked as B8).
 
-**Client credentials** — ExampleApp authenticates to the downstream service as itself:
-- Works for all call sites including background jobs
-- Downstream sees the *service's* identity, not the user's
-- Requires client registration in the identity server and secret management
+## Health check
 
-Until B8 is implemented, downstream Forge services should remain open (`no AddForgeSecurity*`) or use a custom `DelegatingHandler` to attach credentials.
+Each `AddForgeHttpClient<T>("MyService")` call registers a readiness check named `http-MyService`.
+To exclude it — for example in tests — remove it from `HealthCheckServiceOptions` after registration:
+
+```csharp
+services.Configure<HealthCheckServiceOptions>(opts =>
+    opts.Registrations.RemoveAll(r => r.Name == "http-MyService"));
+```
 
 ## Refit interface
 
@@ -76,3 +79,9 @@ public interface IMyServiceClient
     Task<Item> GetItemAsync(int id, CancellationToken ct = default);
 }
 ```
+
+## Client NuGet package
+
+Each Forge service ships a thin `*.Client` NuGet containing only the Refit interface and DTOs — no server code. Consuming apps install it and register via `AddForgeHttpClient<T>`. Refit generates the HTTP implementation at compile time via source generators.
+
+The `*.Client` project is packable (`PackageId` set, no `IsPackable=false`) and is published automatically by the `publish.yaml` workflow on version tags alongside the other Forge packages.
