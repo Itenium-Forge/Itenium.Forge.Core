@@ -6,6 +6,7 @@ logs
 .claude/
 _bmad/
 TestResults/
+coverage/
 coverage-report/
 appsettings.Local.json
 !Itenium.Forge.Settings.Tests/appsettings.Local.json

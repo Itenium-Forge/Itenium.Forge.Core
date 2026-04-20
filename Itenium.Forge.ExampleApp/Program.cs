@@ -1,9 +1,11 @@
 using Itenium.Forge.Controllers;
 using Itenium.Forge.Core;
+using Itenium.Forge.ExampleCoachingService.Client;
 using Itenium.Forge.ExampleApp;
 using Itenium.Forge.ExampleApp.Data;
 using Itenium.Forge.ExampleApp.Security;
 using Itenium.Forge.HealthChecks;
+using Itenium.Forge.HttpClients;
 using Itenium.Forge.Logging;
 using Itenium.Forge.Security;
 using Itenium.Forge.Telemetry;
@@ -34,6 +36,8 @@ try
             .AddPolicy(nameof(Capability.WriteResX), policy => policy.RequireClaim("capability", nameof(Capability.WriteResX))));
 
     builder.Services.AddScoped<IExampleAppUser, ExampleAppUser>();
+
+    builder.AddForgeHttpClient<ICoachingServiceClient>("ExampleCoachingService");
 
     builder.AddForgeControllers();
     builder.AddForgeProblemDetails();

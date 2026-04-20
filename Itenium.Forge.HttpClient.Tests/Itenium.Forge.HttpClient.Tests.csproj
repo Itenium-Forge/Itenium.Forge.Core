@@ -7,8 +7,6 @@
   <ItemGroup>
     <PackageReference Include="coverlet.collector" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" />
-    <PackageReference Include="Microsoft.Data.Sqlite" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" />
     <PackageReference Include="NUnit" />
     <PackageReference Include="NUnit.Analyzers">
@@ -19,7 +17,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Itenium.Forge.ExampleApp\Itenium.Forge.ExampleApp.csproj" />
+    <ProjectReference Include="..\Itenium.Forge.HttpClient\Itenium.Forge.HttpClient.csproj" />
+    <ProjectReference Include="..\Itenium.Forge.ExampleCoachingService\Itenium.Forge.ExampleCoachingService.csproj" />
     <ProjectReference Include="..\Itenium.Forge.ExampleCoachingService.Client\Itenium.Forge.ExampleCoachingService.Client.csproj" />
   </ItemGroup>
 

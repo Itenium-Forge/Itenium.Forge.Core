@@ -38,7 +38,7 @@
 | B4 | Full row-change audit logging (diff-only) | L | 4 | Hi | ⭕ | B1, B2 |
 | B5 | Auto-migration on startup (dev) | S | 3 | Lo | ⭕ | B1 |
 | B6 | Connection string management conventions | S | 3 | Lo | ⭕ | B1, Settings |
-| B7 | HttpClientFactory with Forge defaults | M | 5 | Lo | ⭕ | A1 |
+| B7 | HttpClientFactory with Forge defaults | M | 5 | Lo | 🟢 | A1 |
 | B8 | Resilience pipeline for HttpClient (Polly v8) | M | 4 | Lo | ⭕ | B7 |
 | B9 | MassTransit integration | L | 4 | Med | ⭕ | A1, B1 |
 | B10 | Outbox pattern (MassTransit EF outbox) | M | 4 | Med | ⭕ | B1, B9 |
