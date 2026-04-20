@@ -69,6 +69,7 @@ public static class ControllerExtensions
     public static void UseForgeControllers(this WebApplication app)
     {
         app.UseResponseCompression();
+        app.UseCors("CorsPolicy");
         app.MapControllers();
     }
 }
