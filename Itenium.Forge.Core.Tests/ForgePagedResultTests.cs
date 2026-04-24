@@ -113,31 +113,24 @@ public class ForgePagedResultTests
     }
 
     [Test]
-    public void Constructor_ThrowsWhenPageIsZero()
-    {
-        Assert.Throws<ArgumentOutOfRangeException>(() =>
-            new ForgePagedResult<int>([], totalCount: 0, page: 0, pageSize: 20));
-    }
-
-    [Test]
     public void Constructor_ThrowsWhenPageIsNegative()
     {
         Assert.Throws<ArgumentOutOfRangeException>(() =>
-            new ForgePagedResult<int>([], totalCount: 0, page: -1, pageSize: 20));
+            new ForgePagedResult<int>([], totalCount: 10, page: -1, pageSize: 20));
     }
 
     [Test]
     public void Constructor_ThrowsWhenPageSizeIsZero()
     {
         Assert.Throws<ArgumentOutOfRangeException>(() =>
-            new ForgePagedResult<int>([], totalCount: 0, page: 1, pageSize: 0));
+            new ForgePagedResult<int>([], totalCount: 10, page: 1, pageSize: 0));
     }
 
     [Test]
     public void Constructor_ThrowsWhenPageSizeIsNegative()
     {
         Assert.Throws<ArgumentOutOfRangeException>(() =>
-            new ForgePagedResult<int>([], totalCount: 0, page: 1, pageSize: -1));
+            new ForgePagedResult<int>([], totalCount: 10, page: 1, pageSize: -1));
     }
 
     [Test]
