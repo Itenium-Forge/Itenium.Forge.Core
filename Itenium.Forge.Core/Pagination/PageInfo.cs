@@ -19,9 +19,6 @@ public sealed class PageInfo
 
     public bool HasNextPage => Page < TotalPages;
 
-    /// <summary>
-    /// Parameterless constructor for deserialization.
-    /// </summary>
     public PageInfo()
     {
     }

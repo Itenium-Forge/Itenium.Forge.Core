@@ -14,9 +14,6 @@ public sealed class ForgePagedResult<T> : IForgePagedResult<T>
     /// <inheritdoc/>
     public PageInfo Page { get; init; } = null!;
 
-    /// <summary>
-    /// Parameterless constructor for deserialization.
-    /// </summary>
     public ForgePagedResult()
     {
     }
